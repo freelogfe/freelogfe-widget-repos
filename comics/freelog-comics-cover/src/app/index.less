@@ -1,0 +1,70 @@
+p{margin: 0;}
+.freelog-comics-cover-app {
+  position: relative; box-sizing: border-box;
+  min-height: 400px; padding-top: 100px;
+
+  &:before {
+    content: " ";
+    position: absolute; top: 0; left: 0; z-index: 1;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,.4);
+  }
+
+  .cover-bg {
+    overflow: hidden;
+    position: absolute; top: 0; right: 0; bottom: 0;
+    width: 100%; height: 100%;
+
+    img {
+      width: 100%;
+      filter: blur(60px);
+      background-size: 100% 400%;
+    }
+  }
+
+  .cover-introduction {
+    position: relative; top: 1px; z-index: 1;
+    min-height: 300px; width: 1200px; margin: 0 auto;
+    border-top-left-radius: 8px; border-top-right-radius: 8px;
+    background-color: #fff;
+
+    .cover {
+      overflow: hidden;
+      position: absolute; top: -45px; left: 40px; z-index: 1;
+      width: 240px; height: 314px; border-radius: 6px;
+      box-shadow: 0 0 5px #444;
+
+      img{ display: block; width: 100%; }
+    }
+
+    .info-box{
+      overflow: hidden;
+      width: 870px;
+      margin-left: 280px; padding-left: 20px;
+    }
+
+    .name{
+      margin-top: 35px; font-size: 30px; color: #252525;
+    }
+    .author{
+      margin-top: 10px; font-size: 13px; color: #666;
+    }
+    .tags{
+      margin-top: 20px; font-size: 13px; color: #252525;
+      span:first-child {
+        margin-rigth: 30px; color: #999;
+      }
+    }
+    .cont{
+      display: -webkit-box;
+      position: relative; overflow: hidden; text-overflow: ellipsis;
+      margin-top: 10px; margin-right: 160px;
+      line-height: 20px; font-size: 13px; color: #666;
+    }
+
+    p{
+      span{}
+    }
+
+  }
+}

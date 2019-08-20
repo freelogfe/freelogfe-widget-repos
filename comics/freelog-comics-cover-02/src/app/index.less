@@ -1,0 +1,89 @@
+
+p{margin: 0;}
+.freelog-comics-cover-02-app {
+  position: relative; box-sizing: border-box;
+  padding-top: 100px; border: 1px solid #cec7bd;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+
+  &:before {
+    content: " ";
+    position: absolute; top: 0; left: 0; z-index: 1;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,.4);
+  }
+
+  .cover-bg {
+    overflow: hidden;
+    position: absolute; top: 0; right: 0; bottom: 0;
+    width: 100%; height: 100%;
+
+    img {
+      width: 100%;
+      filter: blur(10px);
+      background-size: 100% 400%;
+    }
+  }
+
+  .cover-introduction {
+    position: relative; top: 1px; z-index: 1;
+    min-height: 355px; width: 1200px; margin: 0 auto;
+    border-bottom: 1px dashed #999;
+    background-color: #fff;
+
+    .c-left-box {
+      overflow: hidden;
+      position: absolute; top: 34px; left: 20px; z-index: 1;
+      width: 250px; height: 308px;
+      background-image: url('https://ac.gtimg.com/media/images/page_works_sprite.png');
+      background-position: 1px 0;
+      background-repeat: no-repeat;
+    }
+
+    .cover {
+      width: 100%; height: 100%;
+
+      img{ display: block; margin: 2px 0 0 20px; }
+
+    }
+
+    .c-shadow{
+      position: absolute; left: 20px; top: 2px;
+      width: 36px; height: 280px;
+      background-image: url('https://ac.gtimg.com/media/images/page_works_sprite.png');
+      background-position: -281px 0;
+      background-repeat: no-repeat;
+    }
+
+    .info-box{
+      overflow: hidden;
+      width: 870px;
+      margin-left: 280px; padding-left: 20px; padding-bottom: 10px;
+    }
+
+    .name{
+      margin-top: 35px; font-size: 32px; line-height: 32px; color: #252525;
+    }
+    .author{
+      margin-top: 10px; font-size: 13px; color: #666;
+    }
+    .tags{
+      margin-top: 20px; font-size: 13px; color: #252525;
+      span.tag {
+        margin-left: 10px; padding: 0 10px; margin-right: 5px;
+        border: 1px solid #efddd3; border-radius: 18px;
+        line-height: 18px; color: #666;
+      }
+    }
+    .cont{
+      display: -webkit-box;
+      position: relative; overflow: hidden; text-overflow: ellipsis;
+      margin-top: 10px; margin-right: 160px; padding-bottom: 20px; border-bottom: 1px dashed #999;
+      line-height: 20px; font-size: 13px; color: #666;
+    }
+
+    p{
+      span{}
+    }
+
+  }
+}
