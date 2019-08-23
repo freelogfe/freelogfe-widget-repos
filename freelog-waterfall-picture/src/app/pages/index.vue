@@ -186,15 +186,17 @@
                 pageSize: 10,
                 resourceType: 'image',
             }).then(res => {
-                resolve({
-                        dataList: res.data.dataList.map((i) => ({
-                            title: i.releaseInfo.releaseName,
-                            src: `//qi.testfreelog.com/v1/auths/presentables/${i.presentableId}.file`,
-                            // resourceID: i.resourceId,
-                        })),
-                        done: res.data.page * res.data.pageSize > res.data.totalItem,
-                    }
-                );
+                const hostname = ['qi', ...window.location.hostname.split('.').splice(-2)].join('.');
+                const prefix = `//${hostname}/v1/auths/presentables/`;
+                    resolve({
+                            dataList: res.data.dataList.map((i) => ({
+                                title: i.releaseInfo.releaseName,
+                                src: `${prefix}${i.presentableId}.file`,
+                                // resourceID: i.resourceId,
+                            })),
+                            done: res.data.page * res.data.pageSize > res.data.totalItem,
+                        }
+                    );
             })
         }));
     }
