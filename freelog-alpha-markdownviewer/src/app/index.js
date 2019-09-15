@@ -1,5 +1,4 @@
 import Vue from 'vue'
-import router from './router'
 import './index.less'
 import App from './pages/app'
 
@@ -8,14 +7,22 @@ var template = require('./index.html');
 class FreelogAlphaMarkdownviewer extends HTMLElement {
   constructor() {
     super()
+    this.presentableId = this.dataset.presentableId
   }
 
   initApp() {
+    const { presentableId = '', presentableName = '' } = this.dataset
+    var mixin = {
+      data: function () {
+        return {
+          presentableName, presentableId
+        }
+      }
+    }
     var app = new Vue({
+      mixins: [mixin],
       el: '#freelog-alpha-markdownviewer-app',
-      router,
-      template: '<App/>',
-      components: {App}
+      render: h => h(App),
     })
   }
 
@@ -27,3 +34,4 @@ class FreelogAlphaMarkdownviewer extends HTMLElement {
 
 
 customElements.define('freelog-alpha-markdownviewer', FreelogAlphaMarkdownviewer);
+

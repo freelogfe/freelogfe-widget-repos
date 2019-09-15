@@ -1,0 +1,33 @@
+.freelog-alpha-pbviewer-app {
+  display: flex; justify-content: center; align-items: center;
+  height: 100vh;
+
+  #pb-viewer {
+    position: relative;
+    width: 90%;
+  }
+
+  .el-carousel {
+    
+    .el-carousel__item {
+      display: flex; justify-content: center; align-items: center;
+      
+      background-color: #bbb;
+      &.is-active {
+        background-color: #bfa;
+      }
+    }
+  }
+}
+
+.app-footer { display: none; }
+  
+.clearfix:before,
+  .clearfix:after {
+      display: table;
+      content: "";
+  }
+  
+  .clearfix:after {
+      clear: both
+  }
