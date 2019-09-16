@@ -44,7 +44,7 @@
       li{
         float: left;
         padding: 0.02rem .2rem; margin-right: .2rem; border: 1px solid #fff; border-radius: .5rem;
-        font-size: .32rem;
+        font-size: .32rem; list-style-type: none;
       }
 
       .bg-mask {

@@ -3,9 +3,10 @@ var htmlStr = require('./index.html')
 import { 
   nes_load_url, 
   playAnimationFrame, pauseAnimationFrame, setUpNesAudio, resetKeyboard, resetNes,
-  addPlayerKeyListener, removePlayerKeyListener, requestFullscreen,
+  addPlayerKeyListener, removePlayerKeyListener,
   DEFAULT_BUTTON_KEY_MAP, DEFAULT_BUTTON_KEY_VERSION } from './nes-embed'
 import { addGamepadListener, removeGamepadListener } from './gamepad'  
+import { _requestFullscreen } from './utils'
 
 var isPlayAudio = true
 var nesAudioContext = null, nesAudioScriptNode = null, nesContext = null
@@ -278,7 +279,7 @@ class FreelogSingleJsnes extends HTMLElement {
   }
 
   tapFullScreenBtn() {
-    requestFullscreen(this.$canvas)
+    _requestFullscreen(this.$canvas)
   }
 
   handleKeydown(event) {

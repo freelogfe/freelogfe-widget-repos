@@ -58,7 +58,7 @@
     "node": ">= 6.0.0"
   },
   "dependencies": {
-    "@freelog/freelog-markdown-parser": "^0.1.5",
+    "@freelog/freelog-markdown-parser": "^0.1.8",
     "vue": "^2.5.16",
     "vue-router": "^3.0.1"
   }

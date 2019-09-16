@@ -4,7 +4,6 @@ var htmlStr = require('./index.html')
 class FreelogAlphaAside extends HTMLElement {
   constructor() {
     super()
-
     this.innerHTML = htmlStr
     const sidebarVisible = this.getAttribute('sidebar-visible')
     const isMultiContent = this.getAttribute('is-multi-content')

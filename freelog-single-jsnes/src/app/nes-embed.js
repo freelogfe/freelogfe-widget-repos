@@ -1,5 +1,7 @@
-import initGamepad from './gamepad'
+
 import jsnes from 'jsnes'
+import initGamepad from './gamepad'
+import { _requestFullscreen, _cancelFullScreen } from './utils'
 
 var SCREEN_WIDTH = 256;
 var SCREEN_HEIGHT = 240;
@@ -138,9 +140,9 @@ function keyboard(callback, event, keyMap){
 					isFullscreen = !isFullscreen
 					
 					if(isFullscreen) {
-						requestFullscreen()
+						_requestFullscreen($canvasDom)
 					}else {
-						cancelFullScreen()
+						_cancelFullScreen()
 					}
 					break
 				}
@@ -166,6 +168,7 @@ export function nes_load_url($canvas, path, immediate = true){
 
 function nes_init($canvas){
 	$canvasDom = $canvas
+	nes._$canvasDom = $canvas
 	canvas_ctx = $canvas.getContext("2d");
 	image = canvas_ctx.getImageData(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 	
@@ -285,26 +288,3 @@ export function resetKeyboard(keyMap) {
 	document.addEventListener('keyup', handleKeyup);
 }
 
-export function requestFullscreen(element = $canvasDom) {
-	if (element.requestFullscreen) {
-		element.requestFullscreen()
-	} else if (element.mozRequestFullScreen) {
-		element.mozRequestFullScreen()
-	} else if (element.msRequestFullscreen) {
-		element.msRequestFullscreen()
-	} else if (element.webkitRequestFullscreen) {
-		element.webkitRequestFullScreen()
-	}
-}
-
-function cancelFullScreen() {
-	if (document.exitFullScreen) {
-		document.exitFullScreen()
-	} else if (document.webkitCancelFullScreen) {
-		document.webkitCancelFullScreen()
-	} else if (document.mozCancelFullScreen) {
-		document.mozCancelFullScreen()
-	} else if (document.msExitFullscreen) {
-		document.msExitFullscreen()
-	}
-}

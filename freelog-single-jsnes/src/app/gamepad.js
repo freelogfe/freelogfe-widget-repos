@@ -1,11 +1,13 @@
 
 import jsnes from 'jsnes'
+import { _requestFullscreen, _cancelFullScreen } from './utils'
 var rAF = window.mozRequestAnimationFrame || window.requestAnimationFrame
 var rAFStop = window.mozCancelRequestAnimationFrame || window.cancelRequestAnimationFrame
 
 var start = null
 var _nesInstance = null
 var turbo = false
+var isFullScreen = false
 var listen_gamepad = { 1: true, 2: true }
 
 export default function initGamepad(nesInstance) {
@@ -42,6 +44,8 @@ var buttonsMap = {
   1: "A",
   2: "X",
   3: "Y",
+  4: "Refresh",
+  5: "Fullscreen",
   8: "Select",
   9: "Start",
   12: "Up",
@@ -58,7 +62,10 @@ var nesButtonMap = {
   'Down': { value: jsnes.Controller.BUTTON_DOWN, isHold: true },
   'Left': { value: jsnes.Controller.BUTTON_LEFT, isHold: true },
   'Right': { value: jsnes.Controller.BUTTON_RIGHT, isHold: true },
+  'Refresh': { value: -1, isHold: false },
+  'Fullscreen': { value: -2, isHold: false }
 }
+
 function gameLoop() {
   if(!turbo) return  
   var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads : []);
@@ -88,6 +95,27 @@ function handleButtunPress(name, player) {
   if(buttonPressed(name, tmp.isHold, player)) {
     playerPressedStatus[name] = true
     _nesInstance.buttonDown(player, tmp.value)
+    if(tmp.value < 0) {
+      switch(tmp.value) {
+        // Refresh
+        case -1: {
+          _nesInstance.reloadROM()
+          break
+        }
+        // Fullscreen
+        case -2: {
+          isFullScreen = !isFullScreen
+          
+          if(isFullScreen) {
+            _requestFullscreen(_nesInstance._$canvasDom)
+          }else {
+            _cancelFullScreen()
+          }
+          break 
+        }
+        default: {}
+      }
+    }
   }else {
     if(playerPressedStatus[name]) {
       _nesInstance.buttonUp(player, tmp.value)
@@ -131,6 +159,7 @@ function updated(player) {
   axesStatus[player] = axes
   buttonsStatus[player] = pressed
   // 返回按钮以便调试
+  
   return pressed
 }
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="auth-box" @click="handleAuth" v-if="authInfo && authInfo.isAuth === false">
+  <div class="auth-box" @click.stop="handleAuth" v-if="authInfo && authInfo.isAuth === false">
     <div class="lock"></div>
   </div>
 </template>
