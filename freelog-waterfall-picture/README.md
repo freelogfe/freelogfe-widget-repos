@@ -3,7 +3,7 @@
 ## 功能介绍
 对图片，以瀑布流的形式，进行展示
 
-![效果演示](doc/source/display.png)
+![效果演示](doc/source/display.jpeg)
 
 ## 节点使用说明
 
