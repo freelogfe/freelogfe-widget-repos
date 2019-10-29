@@ -1,0 +1,101 @@
+.freelog-pagebuild-presentation-app {
+  background-color: #fff; overflow: hidden;
+  .f-pb-p__header {
+    box-sizing: border-box;
+    position: fixed; top: 0; right: 0; left: 0; z-index: 2000;
+    height: 60px; border-bottom: 1px solid #eaecef;
+    background-color: #fff;
+
+    .f-pb-p-site-name { 
+      display: inline-block;
+      margin-top: 12px; padding-left: 24px;
+      
+      .f-pb-p-spinner, h2 {
+        float: left;  
+        height: 34px; line-height: 34px;
+      }
+      .f-pb-p-spinner {
+        width: 34px; margin-right: 10px; border-radius: 2px;
+         font-size: 22px; text-align: center;  
+        background-color: #008fff; 
+        a { color: #fff; }
+      }
+      h2 {
+        font-size: 22px;
+      }
+    }
+  }
+
+  #f-pb-p__main {
+    position: relative;
+    box-sizing: border-box;
+    width: 990px; min-height: 100vh; margin: auto; padding-top: 60px; 
+
+    .f-pb-p-tags-box {
+      margin: 10px 20px 0;
+      .el-tag {
+        margin-right: 12px; margin-top: 10px; cursor: pointer;
+      }
+    }
+    
+    .f-pb-p-item {
+      position: relative;
+      margin: 20px; 
+    }
+
+
+    @imgWidth: 180px;
+    @imgHeight: 150px;
+
+    .f-pb-p-img {
+      float: left;
+      width: @imgWidth; height: @imgHeight; border: 1px solid #d8d8d8;
+    }
+
+    .f-pb-p-info {
+      min-height: @imgHeight ; padding-left: @imgWidth + 20; 
+      .f-pb-p-i-name { font-size: 20px; }
+      .f-pb-p-i-tags {
+        margin-top: 10px;
+        .el-tag { margin-right: 8px; margin-bottom: 10px; }
+      }
+      .f-pb-i-intro {
+        display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4;
+        overflow: hidden;
+        font-size: 14px; color: #333;
+      }
+      .f-pb-p-i-btn-group {
+        position: absolute; top: 20px; right: 20px;
+        a { color: #fff; }
+      }
+    }
+
+    .f-pb-p-usage {
+      margin-top: 20px;
+
+      .f-pb-p-u-content {
+        overflow: hidden;
+        height: 0; transition: height .2s; background-color: #fff;
+        .f-pb-p-u-md-box {
+          visibility: hidden;
+          padding: 20px; border-top: 1px solid #eaeefb;
+          &.visible { visibility: visible; }
+        }
+      }
+      .f-pb-p-u-btn-bar {
+        cursor: pointer;
+        font-size: 14px; line-height: 40px; 
+        background-color: #fff; color: #d3dce6; text-align: center;
+        &:hover { color: #409EFF; }
+        .el-icon-caret-bottom {
+          transition: all .2s;
+          &.rotate180 {
+            transform: rotate(180deg); 
+          }
+        }
+      }
+    }
+    
+  }
+    
+}

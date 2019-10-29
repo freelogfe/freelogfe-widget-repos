@@ -25,8 +25,8 @@ function createLoader(loader) {
 var onloadAboutMe = createLoader(function (callback) {
   loadPresentablesByTags('aboutme')
     .then(data => {
-      if (data.errcode === undefined) {
-        var presentable = data.dataList[0];
+      if (data.length) {
+        var presentable = data[0];
         if (presentable) {
           requestPresentableData(presentable.presentableId).then(data => {
             callback(Object.assign(presentable, data));
@@ -42,10 +42,11 @@ var onloadAboutMe = createLoader(function (callback) {
 
 function loadPresentablesByTags(tags) {
   return window.FreelogApp.QI.fetchPresentablesList({
-    tags
+    tags,
+    isLoadingResourceInfo: 1
   }).then(res => {
     if (res.errcode === 0) {
-      return res.data
+      return res.data.dataList
     } else {
       return res
     }
@@ -55,15 +56,17 @@ function loadPresentablesByTags(tags) {
 function loadBlogConfig() {
   return loadPresentablesByTags('blog-config')
     .then(data => {
-      if (data.errcode === undefined) {
+      if (data.length) {
         var presentable = data[0]
         if (presentable) {
-          return window.FreelogApp.QI.fetchPresentableResourceData(presentable.presentableId).then(res => {
-            presentable.token = decodeURIComponent(res.headers.get('freelog-sub-resource-auth-token'))
-            return res.json().then(data => {
-              return Object.assign(presentable, data)
+          return window.FreelogApp.QI.fetchPresentableResourceData(presentable.presentableId)
+            .then(res => {
+              const subReleases = window.atob(res.headers.get('freelog-sub-releases'))
+              presentable.subReleases = JSON.parse(subReleases)
+              return res.json().then(data => {
+                return Object.assign(presentable, data)
+              })
             })
-          })
         } else {
           return null
         }
@@ -78,14 +81,17 @@ const presentableMap = {}
 var onloadArticles = createLoader(function (callback) {
   return window.FreelogApp.QI.fetchPresentablesList({
     tags: 'article',
-    resourceType: 'markdown'
+    resourceType: 'markdown',
+    isLoadingResourceInfo: 1
   }).then(res => {
     if (res.errcode === 0) {
       res.data.dataList.forEach(presentable => {
         presentableMap[presentable.presentableId] = presentable
       })
-      console.log('presentableMap ----', presentableMap)
-      callback(res.data.dataList)
+      callback(res.data.dataList.filter(p => {
+        p.userDefinedTags = p.userDefinedTags.filter(tag => tag != 'article')
+        return p
+      }))
     } else {
       window.FreelogApp.trigger('HANDLE_INVALID_RESPONSE', {response: res})
     }

@@ -63,7 +63,7 @@ class FreelogAlphaAside extends HTMLElement {
     if(this.sidebarVisible) {
       this.sidebarTimer = setTimeout(() => {
         this.toggleClass(this.$app, 'hide-sidebar')
-      }, 200)
+      }, 10000)
     }else {
       this.showExpanderBtn()
     }

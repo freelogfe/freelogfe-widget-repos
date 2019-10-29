@@ -1,0 +1,57 @@
+<div class="freelog-pagebuild-presentation-app">
+  <!--your codes here-->
+  <header class="f-pb-p__header">
+    <div class="f-pb-p-site-name">
+      <div class="f-pb-p-spinner">
+        <a href="https://console.freelog.com" target="_blank" class="">F</a>
+      </div>
+      <h2>Page Build Presentation</h2>
+    </div>
+  </header>
+  <main id="f-pb-p__main">
+    <div class="f-pb-p-tags-box">
+      <el-tag @click="emptySelectedTag" :effect="selectedTag.length ? 'plain' : 'dark'"  size="small">全部</el-tag>
+      <el-tag 
+        v-for="tag in pbTags" :key="tag" 
+        :effect="selectedTag.indexOf(tag) === -1 ? 'plain' : 'dark'" 
+        size="small"
+        @click="tapFilterTag(tag)">
+        {{ tag }}
+      </el-tag>
+    </div>
+    <div class="f-pb-p-list">
+      <el-card class="f-pb-p-item" :body-style="{ backgroundColor: '#d3d3d32b' }" v-for="(pb, index) in targetPbMdList">
+        <el-image class="f-pb-p-img" :src="pb.previewImgUrl" :preview-src-list="pb.releaseInfo.previewImages" fit="contain"></el-image>
+        <div class="f-pb-p-info">
+          <div class="f-pb-p-i-name">{{pb.presentableName}}</div>
+          <div class="f-pb-p-i-tags">
+            <el-tag v-for="tag in pb.userDefinedTags" :key="tag" type="s" effect="plain" size="small">
+              {{ tag }}
+            </el-tag>
+          </div>
+          <div class="f-pb-i-intro">
+            {{pb.releaseInfo.intro !== '' ? pb.releaseInfo.intro : '暂无详细描述...'}}
+          </div>
+          <div class="f-pb-p-i-btn-group">
+            <el-button type="primary" size="mini">
+              <a :href="pb.pbReleaseDetailPageUrl" target="_blank">获取授权</a>
+            </el-button>
+            <el-button type="primary" size="mini" :disabled="!pbDemoPreviewSiteMap[pb.releaseInfo.releaseName]" @click="tapDemoPreviewBtn(pbDemoPreviewSiteMap[pb.releaseInfo.releaseName])">
+              <a :href="pbDemoPreviewSiteMap[pb.releaseInfo.releaseName]" target="_blank">Demo预览</a>
+            </el-button>
+          </div>
+        </div>
+        <div class="f-pb-p-usage">
+          <div class="f-pb-p-u-btn-bar" @click="tapViewUsageBtn(index)">
+            {{pb.mdBoxVisible ? '收起' : '查看使用方法'}} 
+            <i class="el-icon-caret-bottom" :class="{'rotate180': pb.mdBoxVisible}"></i>
+          </div>
+          <div class="f-pb-p-u-content" :style="{ height: pb.usageMdBoxheight }"> 
+            <div class="f-pb-p-u-md-box" :class="{'visible': pb.mdBoxVisible}"  :ref="pb.pbMdBoxRef"></div>
+          </div>
+        </div>
+      </el-card>
+    </div>
+    <el-backtop></el-backtop>
+  </main>
+</div>

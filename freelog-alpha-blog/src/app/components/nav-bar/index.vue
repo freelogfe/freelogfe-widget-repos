@@ -55,16 +55,24 @@
       initView() {
         loadBlogConfig().then(data => {
 
-          if (data && data.token) {
+          if (data && data.subReleases) {
+            const map = {}
+            data.subReleases.forEach(item => {
+              map[item.n] = item
+            })
             var blogConfig = data;
             try {
-              window.FreelogApp.QI.resolveResourceUrl({resourceId: blogConfig.avatar}).then(url => {
-                blogConfig.avatarUrl = url
+              blogConfig.avatarUrl = window.FreelogApp.QI.resolveSubResourceDataUrl({
+                presentableId: data.presentableId,
+                subReleaseId: map[blogConfig.avatar].id,
+                version: map[blogConfig.avatar].v
               })
-
-              window.FreelogApp.QI.resolveResourceUrl({resourceId: blogConfig.postImage}).then(url => {
-                blogConfig.postImageUrl = url
+              blogConfig.postImageUrl = window.FreelogApp.QI.resolveSubResourceDataUrl({
+                presentableId: data.presentableId,
+                subReleaseId: map[blogConfig.postImage].id,
+                version: map[blogConfig.avatar].v
               })
+              
               this.setPageTitle(blogConfig.blogTitle || blogConfig.name)
             } catch (e) {
               console.error(e)

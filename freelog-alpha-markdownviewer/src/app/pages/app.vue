@@ -207,7 +207,7 @@ export default {
 
     .article-title {
       margin-bottom: 10px;
-      padding: 9px 12px;
+      padding: 15px 12px;
       border-bottom: 1px solid #e2edf9;
 
       h2 { font-size: 30px; }

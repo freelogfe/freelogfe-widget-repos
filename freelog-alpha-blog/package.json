@@ -57,7 +57,7 @@
     "node": ">= 6.0.0"
   },
   "dependencies": {
-    "@freelog/freelog-markdown-parser": "^0.1.3",
+    "@freelog/freelog-markdown-parser": "^0.1.9",
     "highlight.js": "^9.15.8",
     "install": "^0.13.0",
     "marked": "^0.7.0",

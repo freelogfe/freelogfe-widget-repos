@@ -16,7 +16,7 @@
             </h1>
 
             <div class="article-info clearfix" v-if="article.resourceInfo&&article.resourceInfo.meta">
-              <tags class="archive-tags" :tags="article.resourceInfo.meta.tags || []"></tags>
+              <tags class="archive-tags" :tags="article.userDefinedTags || []"></tags>
             </div>
           </header>
         </div>
@@ -40,7 +40,7 @@
       Tags
     },
     mounted() {
-
+      
     },
     methods: {
       formatDate(date){

@@ -225,7 +225,7 @@
 					clearTimeout(this.timeoutTimer)
 				}else{
           console.log('isCanplaymusic', this.isCanPlayMusic)
-          this.isCanPlayMusic && this.$audio.play()
+          this.isCanPlayMusic && this.$audio && this.$audio.play()
 				}
 			},
 			activeSongIndex (){

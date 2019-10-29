@@ -40,6 +40,10 @@
             content: null
           }
         }
+      },
+      showToc: {
+        type: Boolean,
+        default: true
       }
     },
     watch: {
@@ -48,10 +52,14 @@
       }
     },
     mounted() {
+      console.log('this.showToc --', this.showToc)
       this.parser = new MarkdownParser({
         container: this.$el.querySelector('.js-article-content .markdown-body'),
+        presentableId: this.data.presentableId,
+        subReleases: [],
+        showToc: this.showToc,
         afterRender: (config) => {
-          this.hasToc = !!config.tocs.length;
+          this.hasToc =  this.showToc ? !!config.tocs.length : this.showToc;
         }
       });
 

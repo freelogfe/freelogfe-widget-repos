@@ -6,7 +6,7 @@
         <span class="book-author" v-show="bookDetail.authorName">{{bookDetail.authorName}}著</span>
       </div>
       <div class="book-text-box" ref="bookText">
-        <div class="book-text-wrap" v-for="chapterItem in chapters">
+        <div class="book-text-wrap" v-for="chapterItem in chapters" :key="chapterItem.chapter">
           <div class="main-text-wrap">
             <div class="text-head">
               <a class="book-mark" href="javascript:" title="书签"></a>
@@ -59,7 +59,7 @@
                   <i>阅读主题</i>
                   <span @click="changeThemeHandler(index)"
                         :class="['theme-'+index,{active: setting.activeTheme===index}]"
-                        v-for="index in themeList"></span>
+                        v-for="index in themeList" :key="index"></span>
                 </li>
                 <li class="font-size"><i>字体大小</i>
                   <div>
@@ -82,7 +82,7 @@
           <div class="panel-box">
             <div class="panel-list-wrap catalog-scroll-wrap" :style="{maxHeight: catalogMaxHeight+'px'}">
               <div class="catalog-list-wrap">
-                <template v-for="volume in volumes">
+                <template v-for="volume in volumes" >
                   <h3 @click="toggleVolumeListHandler(volume)">
                     <i>
                       <span class="volume-title">{{volume.volumeName}}</span>
@@ -93,7 +93,7 @@
                     <ul>
                       <li
                         :class="{on: chapter._id===readProcess._id}"
-                        v-for="(chapter,index) in volume.chapters">
+                        v-for="(chapter,index) in volume.chapters" :key="'chapter-' + index">
                         <a href="javascript:;" @click="gotoChapterHandler(volume, chapter)">
                           第{{chapter.resourceInfo.meta.chapter}}章 {{chapter.resourceInfo.meta.chapterName}}
                           <i class="lock-chapter" v-if="chapter._detail && chapter._detail.error"></i>

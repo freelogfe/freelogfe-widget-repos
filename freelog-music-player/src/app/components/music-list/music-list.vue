@@ -1,4 +1,4 @@
-d<template>
+<template>
 	<div class="mp-list">
 		<div class="mp-list-head">
 			<div class="title">
@@ -13,7 +13,7 @@ d<template>
 					<th>#</th>
 					<th width="238">歌曲标题</th>
 					<th width="40"></th>
-					<th width="40">时长</th>
+					<th width="60">时长</th>
 					<th>歌手</th>
 					<th>专辑</th>
 				</tr>

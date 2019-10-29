@@ -29,7 +29,7 @@ function handleErrorResponse(response){
 }
 
 var onloadBookDetail = createLoader(function (callback) {
-  window.FreelogApp.QI.fetchPresentablesList({ tags: 'book', resourceType: 'json', isLoadingResourceInfo: 1 })
+  window.FreelogApp.QI.fetchPresentablesList({ tags: 'book-intro', resourceType: 'json', isLoadingResourceInfo: 1 })
     .then(res => {
       if (res.errcode === 0 && res.data.dataList.length) {
         const { presentableId } = res.data.dataList[0]

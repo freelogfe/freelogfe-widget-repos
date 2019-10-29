@@ -1,6 +1,6 @@
 <template>
   <div class="blog-about-me-view">
-    <article-viewer :data="article" @reload="render"></article-viewer>
+    <article-viewer :data="article" @reload="render" :showToc="false"></article-viewer>
   </div>
 </template>
 
