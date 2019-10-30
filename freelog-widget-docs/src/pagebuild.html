@@ -15,7 +15,7 @@
       height: 60px; border-bottom: 1px solid #eaecef;
       background-color: #fff;
     }
-    .site-name { visibility: hidden; }
+    .site-name, .docs-menu-btn { visibility: hidden; }
     .freelog-widget-docs-app .site-name,
     .freelog-widget-docs-app .site-name h2,
     .freelog-widget-docs-app .site-name .f-loading-spinner, 
@@ -37,14 +37,14 @@
         <div class="f-loading-spinner">
           <a href="https://console.freelog.com" target="_blank" class="">F</a>
         </div>
-        <div class="sidebar-toggle-btn" :class="{'open': sidebarVisible}" @click="toggleSidebar">
+        <div class="sidebar-toggle-btn" :class="{'open': sidebarVisible}" v-if="!homePageVisible" @click="toggleSidebar">
           <span></span>
           <span></span>
           <span></span>
         </div>
-        <h2>{{docsName}}</h2>
+        <h2>{{docsName || siteName}}</h2>
       </div>
-      <div class="docs-menu-btn" v-if="!homePageVisible">
+      <div class="docs-menu-btn" :class="{ 'visible': !homePageVisible }" >
         <a href="#"><i class="el-icon-s-home"></i></a>
       </div>
     </header> 

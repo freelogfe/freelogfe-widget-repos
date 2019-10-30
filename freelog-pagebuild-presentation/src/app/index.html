@@ -20,7 +20,7 @@
       </el-tag>
     </div>
     <div class="f-pb-p-list">
-      <el-card class="f-pb-p-item" :body-style="{ backgroundColor: '#d3d3d32b' }" v-for="(pb, index) in targetPbMdList">
+      <el-card class="f-pb-p-item" :body-style="{  }" v-for="(pb, index) in targetPbMdList">
         <el-image class="f-pb-p-img" :src="pb.previewImgUrl" :preview-src-list="pb.releaseInfo.previewImages" fit="contain"></el-image>
         <div class="f-pb-p-info">
           <div class="f-pb-p-i-name">{{pb.presentableName}}</div>
@@ -33,10 +33,10 @@
             {{pb.releaseInfo.intro !== '' ? pb.releaseInfo.intro : '暂无详细描述...'}}
           </div>
           <div class="f-pb-p-i-btn-group">
-            <el-button type="primary" size="mini">
+            <el-button type="primary" size="mini" class="f-pb-p-i-btn-auth">
               <a :href="pb.pbReleaseDetailPageUrl" target="_blank">获取授权</a>
             </el-button>
-            <el-button type="primary" size="mini" :disabled="!pbDemoPreviewSiteMap[pb.releaseInfo.releaseName]" @click="tapDemoPreviewBtn(pbDemoPreviewSiteMap[pb.releaseInfo.releaseName])">
+            <el-button type="primary" size="mini" class="f-pb-p-i-btn-demo" :disabled="!pbDemoPreviewSiteMap[pb.releaseInfo.releaseName]" @click="tapDemoPreviewBtn(pbDemoPreviewSiteMap[pb.releaseInfo.releaseName])">
               <a :href="pbDemoPreviewSiteMap[pb.releaseInfo.releaseName]" target="_blank">Demo预览</a>
             </el-button>
           </div>
