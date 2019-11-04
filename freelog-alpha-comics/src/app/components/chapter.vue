@@ -34,35 +34,32 @@
       return {
         activeChapterIndex: 0,
         imgPlaceholder: 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1552889876485&di=b8c1358fe948f29348bc5af5184613e2&imgtype=0&src=http%3A%2F%2Fhbimg.b0.upaiyun.com%2Fbdaca9a07e1a8947c00c2f826ebf848750927aa24963-cATwbg_fw658',
-        subReleases: null,
         subReleasesMap: {},
-        chapterAuthResult: this.chapterPresentable ? chapterAuthResultMap[this.chapterPresentable.presentableId] : null
       }
     },
     computed: {
       chapterCoverUrl() {
         const p = this.chapterPresentable
         return p && p.releaseInfo && p.releaseInfo.previewImages.length ? p.releaseInfo.previewImages[0] : ''
-      }
-    },
-    watch: {
-      chapterPresentable(val, oldVal) {
-        if(val && val.presentableId) {
-          this.getChapterAuthInfo(val.presentableId)
-            .then((data) => {
-              if(typeof data === 'object' && data.errcode != undefined) {
-                // authInfo
-                chapterAuthResultMap[val.presentableId] = data.data
-                this.chapterAuthResult = data.data
-                this.subReleases = data.data.subReleases.map(subR => {
+      },
+      chapterAuthResult() {
+        return this.chapterPresentable != null ? this.chapterPresentable.authResult : null
+      },
+      subReleases() {
+        if(this.chapterAuthResult != null) {
+          const subReleasesArr = this.chapterAuthResult['freelog-sub-releases'] || []
+          return subReleasesArr.map(subR => {
                   this.subReleasesMap[subR.n] = subR
                   this.subReleasesMap[subR.id] = subR
                   return subR
                 })
-              }
-            })
+        }else {
+          return null
         }
       }
+    },
+    watch: {
+      
     },
     methods: {
       // 获取
@@ -95,15 +92,20 @@
       // 处理授权问题
       handleAuth() {
         const self = this
-        window.FreelogApp.trigger(
-          'HANDLE_INVALID_RESPONSE',
-          { response: this.chapterAuthResult },
-          function(data) {
-            this.chapterAuthResult = data
-            chapterAuthResultMap[self.chapterPresentable.presentableId] = data
-            self.$emit('update-p-auth-info', data)
-          }
-        )
+        try {
+          window.FreelogApp.trigger(
+            'HANDLE_INVALID_RESPONSE',
+            { response: this.chapterAuthResult },
+            function(data) {
+              this.chapterAuthResult = data
+              chapterAuthResultMap[self.chapterPresentable.presentableId] = data
+              self.$emit('update-p-auth-info', data)
+            }
+          )
+        }catch(e) {
+          console.log('e --', e)
+        }
+          
       },
     },
   }

@@ -36,7 +36,6 @@ class FreelogWidgetDocs extends HTMLElement {
     new Vue({
       el: '.freelog-widget-docs-app',
       data() {
-        console.log('----', window.__auth_info__.__auth_node_name__ || '')
         return {
           siteName: window.__auth_info__.__auth_node_name__ || '',
           catalogErrorText: '',
