@@ -12,6 +12,10 @@
           :showPlay="index === activeIndex"
           @play="activeIndex = index"
           @stop="activeIndex = -1"
+          @prev="activeIndex--"
+          @next="activeIndex++"
+          :disabledPrev="index === 0"
+          :disabledNext="index === videos.length - 1"
         />
 
         <div style="width: 268px;"></div>

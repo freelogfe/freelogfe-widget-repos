@@ -38,6 +38,12 @@
       class="video-wrap"
       v-if="showPlay"
     >
+      <a
+        class="prev-next"
+        :class="{disabled: disabledPrev}"
+        @click="prevVideo"
+      >&lt</a>
+
       <div class="video-box">
         <div class="video-title">
           <span>{{title}}</span>
@@ -48,6 +54,12 @@
           <VideoPlayer :options="videoOptions"/>
         </div>
       </div>
+
+      <a
+        class="prev-next"
+        :class="{disabled: disabledNext}"
+        @click="nextVideo"
+      >&gt;</a>
     </div>
   </div>
 
@@ -71,6 +83,14 @@
             },
             sources: Array,
             showPlay: {
+                type: Boolean,
+                default: false,
+            },
+            disabledPrev: {
+                type: Boolean,
+                default: false,
+            },
+            disabledNext: {
                 type: Boolean,
                 default: false,
             }
@@ -106,19 +126,31 @@
         },
         methods: {
             mouseover() {
-                console.log('mouseover');
+                // console.log('mouseover');
                 const video = this.$refs.refVideo;
                 if (video.paused) { //如果已暂停则播放
                     video.play(); //播放控制
                 }
             },
             mouseout() {
-                console.log('mouseout');
+                // console.log('mouseout');
                 const video = this.$refs.refVideo;
                 if (!video.paused) {
                     video.pause(); //暂停控制
                 }
-            }
+            },
+            prevVideo() {
+                if (this.disabledPrev) {
+                    return;
+                }
+                this.$emit('prev');
+            },
+            nextVideo() {
+                if (this.disabledNext) {
+                    return;
+                }
+                this.$emit('next');
+            },
         }
     }
 </script>
