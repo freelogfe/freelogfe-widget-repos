@@ -160,8 +160,9 @@
         left = left % 3600000;
         const mm = Math.floor(left / 60000);
         left = left % 60000;
-        const ss = left / 1000;
-        return `${String(hh).padStart('2', '0')} : ${String(mm).padStart('2', '0')} : ${ss}`;
+        const ss = Math.floor(left / 1000);
+        left = left % 1000;
+        return `${String(hh).padStart(2, '0')} : ${String(mm).padStart(2, '0')} : ${String(ss).padStart(2, '0')}.${String(left).padStart(3, '0')}`;
     }
 </script>
 
