@@ -1,5 +1,9 @@
 <template>
-  <video ref="videoPlayer" class="video-js"></video>
+  <video
+    ref="videoPlayer"
+    class="video-js"
+    loop
+  ></video>
 </template>
 
 <script>
@@ -22,7 +26,7 @@
         },
         mounted() {
             this.player = videojs(this.$refs.videoPlayer, this.options, () => {
-                console.log('onPlayerReady', this.player);
+                // console.log('onPlayerReady', this.player);
                 // this.captureImage();
             });
 

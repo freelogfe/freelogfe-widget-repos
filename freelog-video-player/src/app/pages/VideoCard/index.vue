@@ -76,7 +76,7 @@
         },
         props: {
             title: String,
-            description: String,
+            // description: String,
             cover: {
                 type: String,
                 default: '',
@@ -102,12 +102,13 @@
                     controls: true,
                     sources: this.sources,
                 },
-                showPlay: false,
+                // showPlay: false,
                 dataURL: '',
                 videoWidthHeight: {
                     // width: 260 / 365 > video.videoWidth / video.videoHeight ? 'auto' : '100%',
                     // height: 260 / 365 <= video.videoWidth / video.videoHeight ? 'auto' : '100%',
-                }
+                },
+                description: '',
             };
         },
         mounted() {
@@ -116,8 +117,10 @@
             // console.log(this.$refs.refVideo, 'refVideo');
             const video = this.$refs.refVideo;
             video.addEventListener('loadeddata', () => {
-                console.log(video.videoWidth, 'video');
-                console.log(video.videoHeight, 'video');
+                // console.log(video.videoWidth, 'videoWidth');
+                // console.log(video.videoHeight, 'videoHeight');
+                // console.log(video.duration, 'duration');
+                this.description = millisecondsFormatting(video.duration * 1000);
                 this.videoWidthHeight = {
                     width: 260 / 365 < video.videoWidth / video.videoHeight ? 'auto' : '100%',
                     height: 260 / 365 >= video.videoWidth / video.videoHeight ? 'auto' : '100%',
@@ -152,6 +155,16 @@
                 this.$emit('next');
             },
         }
+    }
+
+    function millisecondsFormatting(ms) {
+        let left = Math.floor(ms);
+        const hh = Math.floor(left / 3600000);
+        left = left % 3600000;
+        const mm = Math.floor(left / 60000);
+        left = left % 60000;
+        const ss = left / 1000;
+        return `${String(hh).padStart('2', '0')} : ${String(mm).padStart('2', '0')} : ${ss}`;
     }
 </script>
 
