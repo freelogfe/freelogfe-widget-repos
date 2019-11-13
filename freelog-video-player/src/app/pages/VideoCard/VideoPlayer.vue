@@ -17,7 +17,8 @@
                 default() {
                     return {};
                 }
-            }
+            },
+            play: Boolean,
         },
         data() {
             return {
@@ -61,6 +62,16 @@
         beforeDestroy() {
             if (this.player) {
                 this.player.dispose()
+            }
+        },
+
+        watch: {
+            play(val) {
+                if (val) {
+                    this.player.play();
+                } else {
+                    this.player.pause();
+                }
             }
         }
     }

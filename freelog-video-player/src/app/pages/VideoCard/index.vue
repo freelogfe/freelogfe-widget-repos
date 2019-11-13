@@ -36,7 +36,7 @@
 
     <div
       class="video-wrap"
-      v-if="showPlay"
+      v-show="showPlay"
     >
       <a
         class="prev-next"
@@ -51,7 +51,10 @@
         </div>
 
         <div class="video-player">
-          <VideoPlayer :options="videoOptions"/>
+          <VideoPlayer
+            :options="videoOptions"
+            :play="showPlay"
+          />
         </div>
       </div>
 
@@ -98,7 +101,7 @@
         data() {
             return {
                 videoOptions: {
-                    autoplay: true,
+                    autoplay: false,
                     controls: true,
                     sources: this.sources,
                 },
@@ -112,14 +115,8 @@
             };
         },
         mounted() {
-            // console.log('**************************************');
-            // this.handleCover();
-            // console.log(this.$refs.refVideo, 'refVideo');
             const video = this.$refs.refVideo;
             video.addEventListener('loadeddata', () => {
-                // console.log(video.videoWidth, 'videoWidth');
-                // console.log(video.videoHeight, 'videoHeight');
-                // console.log(video.duration, 'duration');
                 this.description = millisecondsFormatting(video.duration * 1000);
                 this.videoWidthHeight = {
                     width: 260 / 365 < video.videoWidth / video.videoHeight ? 'auto' : '100%',
