@@ -4,7 +4,7 @@
           @mouseout="mouseout"-->
     <a
       :style="'background-image: url(' + cover + ')'"
-      @click="showPlay = true"
+      @click="$emit('play')"
       @mouseenter="mouseover"
       @mouseleave="mouseout"
     >
@@ -41,7 +41,7 @@
       <div class="video-box">
         <div class="video-title">
           <span>{{title}}</span>
-          <a @click="showPlay = false">×</a>
+          <a @click="$emit('stop')">×</a>
         </div>
 
         <div class="video-player">
@@ -70,6 +70,10 @@
                 default: '',
             },
             sources: Array,
+            showPlay: {
+                type: Boolean,
+                default: false,
+            }
         },
         data() {
             return {
@@ -87,9 +91,9 @@
             };
         },
         mounted() {
-            console.log('**************************************');
+            // console.log('**************************************');
             // this.handleCover();
-            console.log(this.$refs.refVideo, 'refVideo');
+            // console.log(this.$refs.refVideo, 'refVideo');
             const video = this.$refs.refVideo;
             video.addEventListener('loadeddata', () => {
                 console.log(video.videoWidth, 'video');

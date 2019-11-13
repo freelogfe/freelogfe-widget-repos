@@ -1,43 +1,18 @@
 <template>
   <div>
-    <!--    <VideoPlayer :options="videoOptions"/>-->
 
     <div class="freelog-video-player">
       <div class="freelog-video-player__container">
 
         <VideoCard
-          v-for="video in videos"
+          v-for="(video, index) in videos"
           :title="video.title"
           description="戚薇征服年下男金瀚"
           :sources="video.sources"
+          :showPlay="index === activeIndex"
+          @play="activeIndex = index"
+          @stop="activeIndex = -1"
         />
-        <!--        <VideoCard-->
-        <!--          title="没有秘密的你"-->
-        <!--          description="戚薇征服年下男金瀚"-->
-        <!--          :sources="[{src: 'http://localhost:9999/oceans.mp4',type: 'video/mp4'}]"-->
-        <!--        />-->
-        <!--        <VideoCard-->
-        <!--          title="没有秘密的你"-->
-        <!--          description="戚薇征服年下男金瀚"-->
-        <!--          :sources="[{src: 'http://localhost:9999/asdf.mp4',type: 'video/mp4'}]"-->
-        <!--        />-->
-        <!--        <VideoCard-->
-        <!--          title="没有秘密的你"-->
-        <!--          description="戚薇征服年下男金瀚"-->
-        <!--          :sources="[{src: 'http://localhost:9999/movie.mp4',type: 'video/mp4'}]"-->
-        <!--        />-->
-        <!--        <VideoCard-->
-        <!--          title="没有秘密的你"-->
-        <!--          description="戚薇征服年下男金瀚"-->
-        <!--          cover="//puui.qpic.cn/vcover_vt_pic/0/mzc0020059t7f7t1570501484/350"-->
-        <!--          :sources="[{src: 'http://localhost:9999/oceans.mp4',type: 'video/mp4'}]"-->
-        <!--        />-->
-        <!--        <VideoCard-->
-        <!--          title="没有秘密的你"-->
-        <!--          description="戚薇征服年下男金瀚"-->
-        <!--          cover="//puui.qpic.cn/vcover_vt_pic/0/mzc0020059t7f7t1570501484/350"-->
-        <!--          :sources="[{src: 'http://localhost:9999/oceans.mp4',type: 'video/mp4'}]"-->
-        <!--        />-->
 
         <div style="width: 268px;"></div>
         <div style="width: 268px;"></div>
@@ -69,17 +44,18 @@
         },
         data() {
             return {
-                videoOptions: {
-                    // autoplay: true,
-                    controls: true,
-                    sources: [
-                        {
-                            src: "http://localhost:9999/oceans.mp4",
-                            type: "video/mp4"
-                        }
-                    ]
-                },
+                // videoOptions: {
+                //     // autoplay: true,
+                //     controls: true,
+                //     sources: [
+                //         {
+                //             src: "http://localhost:9999/oceans.mp4",
+                //             type: "video/mp4"
+                //         }
+                //     ]
+                // },
                 videos: [],
+                activeIndex: -1,
             };
         },
         mounted() {
