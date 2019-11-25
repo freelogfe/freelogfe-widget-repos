@@ -103,7 +103,7 @@
 			resetData() {
 				if(this.songPresentable == null) return 
 				const { songInfo, presentableId } = this.songPresentable
-				this.$audio.src = window.FreelogApp.QI.resolvePresentableResourceUrl(presentableId)
+				this.$audio.src = window.FreelogApp.QI.resolvePresentableDataUrl(presentableId)
 				this.$audio.setAttribute('data-presentableId', presentableId)
 				if(!this.volumeInitial) {
 					this.volumeNumber = this.$audio.volume * 100

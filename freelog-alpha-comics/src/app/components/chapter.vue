@@ -39,27 +39,38 @@
     },
     computed: {
       chapterCoverUrl() {
-        const p = this.chapterPresentable
-        return p && p.releaseInfo && p.releaseInfo.previewImages.length ? p.releaseInfo.previewImages[0] : ''
+        if (this.chapterPresentable == null) return ''
+        const { previewImages, releaseInfo } = this.chapterPresentable
+        if (previewImages && previewImages[0]) {
+          return previewImages[0]
+        } else if (releaseInfo && releaseInfo.previewImages && releaseInfo.previewImages[0]){
+          return releaseInfo.previewImages[0]
+        } else {
+          return ''
+        }
       },
       chapterAuthResult() {
         return this.chapterPresentable != null ? this.chapterPresentable.authResult : null
       },
-      subReleases() {
+    },
+    watch: {
+      chapterAuthResult() {
         if(this.chapterAuthResult != null) {
-          const subReleasesArr = this.chapterAuthResult['freelog-sub-releases'] || []
+          let fSubReleases = this.chapterAuthResult['subReleases']
+          let entityNid = this.chapterAuthResult['freelog-entity-nid']
+          console.log(fSubReleases, entityNid)
+          
+          const subReleasesArr = fSubReleases
           return subReleasesArr.map(subR => {
-                  this.subReleasesMap[subR.n] = subR
-                  this.subReleasesMap[subR.id] = subR
-                  return subR
-                })
+            subR.entityNid = entityNid
+            this.subReleasesMap[subR.name] = subR
+            this.subReleasesMap[subR.id] = subR
+            return subR
+          })
         }else {
           return null
         }
       }
-    },
-    watch: {
-      
     },
     methods: {
       // 获取
@@ -68,7 +79,7 @@
         if(chapterAuthResult != null) {
           return Promise.resolve(chapterAuthResult)
         }else {
-          return window.FreelogApp.QI.fetchPresentableAuth(presentableId)
+          return window.FreelogApp.QI.getPresentableAuth(presentableId)
         }
         
       },
@@ -78,10 +89,11 @@
         const { presentableId } = this.chapterPresentable
         const imagesUrlList = imagesList.map(imgReleaseName => {
           const subRelease = this.subReleasesMap[imgReleaseName]
+          console.log('subRelease --', imgReleaseName, subRelease)
           var url = ''
           if(subRelease != null) {
-            const { id, n, v } = subRelease
-            return window.FreelogApp.QI.resolveSubResourceDataUrl({ presentableId, subReleaseId: id, version: v })
+            const { id, name, entityNid } = subRelease
+            return window.FreelogApp.QI.resolveSubDependDataUrl(presentableId, id, entityNid)
           }else {
             return ''
           }

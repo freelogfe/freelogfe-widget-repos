@@ -1,15 +1,15 @@
 <template>
   <div class="song-item" style="overflow: hidden;">
     <div class="song-img-box" @click="tapNewSongItem">
-      <el-image :src="presentable.songCoverUrl" fit="contain"></el-image>
+      <el-image :src="songCoverUrl" fit="contain"></el-image>
       <i class="el-icon-video-play"></i>
     </div>
     <div class="song-info">
-      <p class="song-i-name" @click="tapNewSongItem">{{presentable.songInfo.songName}}</p>
+      <p class="song-i-name" @click="tapNewSongItem">{{songInfo.songName}}</p>
       <p class="song-i-singer">
-        <span>{{presentable.songInfo.singer}}</span>
+        <span>{{songInfo.singer}}</span>
       </p>
-      <p class="song-i-duration"> {{presentable.songInfo.duration}}</p>
+      <p class="song-i-duration"> {{songInfo.duration}}</p>
     </div>
   </div>
 </template>
@@ -18,11 +18,29 @@
 export default {
   name: 'new-song-item',
   props: {
-    presentable: Object
+    songPresentable: Object
+  },
+  computed: {
+    songCoverUrl() {
+      const p = this.songPresentable
+      let url = 'http://test-frcdn.oss-cn-shenzhen.aliyuncs.com/console/public/img/resource.jpg'
+      if (p != null) {
+        const { previewImages, releaseInfo } = p
+        if(previewImages && previewImages[0]) {
+          url = previewImages[0]
+        } else if (releaseInfo.previewImages && releaseInfo.previewImages[0]) {
+          url = releaseInfo.previewImages[0]
+        }
+      }
+      return url
+    },
+    songInfo() {
+      return this.songPresentable.songInfo
+    }
   },
   methods: {
     tapNewSongItem() {
-      this.$emit('play-song', this.presentable)
+      this.$emit('play-song', this.songPresentable)
     }
   },
 }

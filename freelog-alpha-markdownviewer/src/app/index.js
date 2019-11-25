@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import './index.less'
-import App from './pages/app'
+import App from './pages/app.vue'
 
 var template = require('./index.html');
 

@@ -5,7 +5,7 @@ function showErrorMessage(e) {
 
 export function loadPresentablesList(params) {
   params = Object.assign({ isLoadingResourceInfo: 1, isOnline: 1 }, params)
-  return window.FreelogApp.QI.fetchPresentablesList(params)
+  return window.FreelogApp.QI.pagingGetPresentables(params)
     .catch(showErrorMessage)
     .then(res => {
       if(res.errcode === 0) {
@@ -17,7 +17,7 @@ export function loadPresentablesList(params) {
 }
 
 export function loadPresentableResourceData(presentableId) {
-  return window.FreelogApp.QI.fetchPresentableResourceData(presentableId)
+  return window.FreelogApp.QI.getPresentableData(presentableId)
     .then(resp => {
       const isSuccess = resp.headers.get('freelog-resource-type') != null
       return isSuccess ? resp.text() : resp.json()

@@ -187,6 +187,7 @@ function getNesData(path) {
 	return new Promise((resolve, reject) => {
 		var req = new XMLHttpRequest()
 		req.open("GET", path)
+		req.withCredentials = true;
 		req.overrideMimeType("text/plain; charset=x-user-defined")
 		req.onerror = () => console.log(`Error loading ${path}: ${req.statusText}`)
 		

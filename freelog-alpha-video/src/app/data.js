@@ -25,7 +25,7 @@ function createLoader(loader) {
 const nodeId = window.__auth_info__.__auth_node_id__
 
 function loadResourcesByTags(tags) {
-  return window.FreelogApp.QI.fetchPresentablesList({ tags, "isLoadingResourceInfo": 1 })
+  return window.FreelogApp.QI.pagingGetPresentables({ tags, "isLoadingResourceInfo": 1 })
     .then(res => {
       if (res.errcode === 0) {
         return res.data
@@ -54,7 +54,7 @@ function loadBlogConfig() {
 }
 
 var onloadVideos = createLoader(function (callback) {
-  window.FreelogApp.QI.fetchPresentablesList({ "resourceType": "video", "isLoadingResourceInfo": 1 })
+  window.FreelogApp.QI.pagingGetPresentables({ "resourceType": "video", "isLoadingResourceInfo": 1 })
     .then(res => {
       if (res.errcode === 0 && res.data.dataList && res.data.dataList.length) {
         callback(res.data.dataList)
@@ -64,11 +64,10 @@ var onloadVideos = createLoader(function (callback) {
     })
 });
 
-// window.FreelogApp.QI.fetchPresentableInfo
 
 function loadPresentableAuths(pids) {
   return Promise.all(pids.map(pid => {
-    return window.FreelogApp.QI.fetchPresentableAuth(pid)
+    return window.FreelogApp.QI.getPresentableAuth(pid)
   }))
   .then(resultArr => {
     const presentableMap = {}
@@ -81,10 +80,10 @@ function loadPresentableAuths(pids) {
 
 
 function requestPresentableData(presentableId) {
-  return window.FreelogApp.QI.fetch(`/v1/auths/presentable/${presentableId}?nodeId=${nodeId}`)
+  return window.FreelogApp.QI.getPresentableData(presentableId)
     .then(res => {
-      var meta = decodeURIComponent(res.headers.get('freelog-meta'))
-      var token = decodeURIComponent(res.headers.get('freelog-sub-resource-auth-token'))
+      var meta = decodeURIComponent(res.headers.get('freelog-meta') || '[]')
+      var token = decodeURIComponent(res.headers.get('freelog-sub-dependencies'))
       var resource
 
       try {
@@ -95,7 +94,7 @@ function requestPresentableData(presentableId) {
       }
       if (!resource) {
         return res.json().then(errResponse => {
-          return window.FreelogApp.QI.fetchPresentableInfo(presentableId)
+          return window.FreelogApp.QI.getPresentable(presentableId)
             .then(res => {
               resource = res.data.resourceInfo.meta || {}
               resource.presentableId = presentableId
@@ -114,17 +113,8 @@ function requestPresentableData(presentableId) {
     })
 }
 
-function getResourceToken(pid) {
-  return window.FreelogApp.QI.fetch(`/v1/auths/presentable/${pid}?nodeId=${nodeId}`)
-    .then(res => {
-      var token = decodeURIComponent(res.headers.get('freelog-sub-resource-auth-token'))
-      // var resourceIds = decodeURIComponent(res.headers.get('freelog-sub-resourceids'))
-      return token
-    });
-}
-
 function resolveResourcePath(id) {
-  return window.location.origin.replace(/\/\/[^.]+/,'//qi') + `/v1/auths/presentables/${id}.file`
+  return window.FreelogApp.QI.resolvePresentableDataUrl(id)
 }
 
 
@@ -136,7 +126,7 @@ function onloadPresentableData(presentableId, disabledCache) {
   } else {
     return requestPresentableData(presentableId).then((resource) => {
       if (!resource.presentableId) {
-        return window.FreelogApp.QI.fetchPresentableInfo(presentableId)
+        return window.FreelogApp.QI.getPresentable(presentableId)
           .then(res => {
             presentablesMap[presentableId] = resource
             return Object.assign(res.data, resource);
@@ -154,7 +144,6 @@ function onloadPresentableData(presentableId, disabledCache) {
 var onloadResourceContent = onloadPresentableData
 
 export {
-  getResourceToken,
   resolveResourcePath,
   onloadVideos,
   loadBlogConfig,

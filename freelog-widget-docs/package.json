@@ -53,6 +53,6 @@
     "node": ">=8.9.0"
   },
   "dependencies": {
-    "@freelog/freelog-markdown-parser": "^0.1.9"
+    "@freelog/freelog-markdown-parser": "^0.1.11"
   }
 }

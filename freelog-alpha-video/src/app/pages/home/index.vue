@@ -109,8 +109,10 @@
                   data.forEach(item => {
                     const { presentableId } = item
                     var presentableInfo = presentablesInfoMap[presentableId]
-
-                    Object.assign(item, item.resourceInfo.meta.profile)
+                    if (item.resourceInfo && item.resourceInfo.meta && item.resourceInfo.meta.profile) {
+                      Object.assign(item,  item.resourceInfo.meta.profile)
+                    }
+                    
                     item.authInfo = presentableInfo
                     item.sources = [{
                       src: resolveResourcePath(item.presentableId),

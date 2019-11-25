@@ -21,7 +21,7 @@
     </div>
     <div class="f-pb-p-list">
       <el-card class="f-pb-p-item" :body-style="{  }" v-for="(pb, index) in targetPbMdList">
-        <el-image class="f-pb-p-img" :src="pb.previewImgUrl" :preview-src-list="pb.releaseInfo.previewImages" fit="contain"></el-image>
+        <el-image class="f-pb-p-img" :src="pb.previewImgUrl" :preview-src-list="pb.previewImages || pb.releaseInfo.previewImages || []" fit="contain"></el-image>
         <div class="f-pb-p-info">
           <div class="f-pb-p-i-name">{{pb.presentableName}}</div>
           <div class="f-pb-p-i-tags">
@@ -30,7 +30,7 @@
             </el-tag>
           </div>
           <div class="f-pb-i-intro">
-            {{pb.releaseInfo.intro !== '' ? pb.releaseInfo.intro : '暂无详细描述...'}}
+            {{pb.releaseInfo && pb.releaseInfo.intro !== '' ? pb.releaseInfo.intro : '暂无详细描述...'}}
           </div>
           <div class="f-pb-p-i-btn-group">
             <el-button type="primary" size="mini" class="f-pb-p-i-btn-auth">

@@ -51,9 +51,11 @@ export default {
       presentable: null,
       presentableId: '',
       presentableName: '',
+      entityNid: '',
       current: {},
       authErrorData: null,
-      errorInfo: null
+      errorInfo: null,
+      isMobile: window.FreelogApp.Env.isMobile
     }
   },
 
@@ -65,7 +67,7 @@ export default {
 
   methods: {
     init() {
-      window.FreelogApp.QI.fetchPresentableInfo(this.presentableId)
+      window.FreelogApp.QI.getPresentable(this.presentableId)
         .then(res => {
           if(res.errcode === 0) {
             this.presentable = res.data
@@ -80,11 +82,13 @@ export default {
         })
     },
     loadPresentableData(presentableId) {
-      return window.FreelogApp.QI.fetchPresentableResourceData(presentableId).then((res) => {
+      return window.FreelogApp.QI.getPresentableData(presentableId).then((res) => {
         var isError = !res.headers.get('freelog-resource-type')
-        var subReleasesText = res.headers.get('freelog-sub-releases')
+        var subReleasesText = res.headers.get('freelog-sub-dependencies')
+        this.entityNid = res.headers.get('freelog-entity-nid')
         try {
-          const subReleases = subReleasesText == null ? [] : JSON.parse(atob(subReleasesText))
+          let subReleases = Buffer.from(subReleasesText,'base64').toString('utf-8')
+          subReleases = JSON.parse(subReleases) 
           this.presentableSubReleases[presentableId] = subReleases
         }catch(e) {
           console.error(e)
@@ -98,10 +102,13 @@ export default {
         this.errorInfo = null
         this.$refs.viewer.innerHTML = ''
         const presentableId = this.presentableId
+        const entityNid = this.entityNid
 
         var markdownParser = new MarkdownParser({
           container: this.$refs.viewer,
+          showToc: !this.isMobile,
           presentableId,
+          entityNid,
           subReleases: this.presentableSubReleases[presentableId],
           renderImageError($el, data) {
             if ($el) {
@@ -272,4 +279,10 @@ export default {
       animation-fill-mode: both;
     }
   }
+
+@media screen and (max-width: 768px) {
+  .freelog-alpha-markdownviewer-index {
+    .md-viewer-wrap { margin-right: 10px; }
+  }
+}
 </style>

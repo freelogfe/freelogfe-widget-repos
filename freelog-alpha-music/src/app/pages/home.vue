@@ -54,9 +54,9 @@
             <div class="new-song">
               <new-song-item 
                 class="song-item"
-                v-for="p in songsList" 
-                :key="p.presentableId" 
-                :presentable="p" 
+                v-for="songPresentable in songsList" 
+                :key="songPresentable.releaseName" 
+                :songPresentable="songPresentable" 
                 @play-song="tapNewSongItem">
               </new-song-item>
               <div class="song-item"></div>
@@ -65,11 +65,11 @@
           </el-carousel-item>
         </el-carousel>
         <new-song-item 
-          class="song-item"
           v-else
-          v-for="p in newSongsList" 
-          :key="p.presentableId" 
-          :presentable="p" 
+          class="song-item"
+          v-for="songPresentable in newSongsList" 
+          :key="songPresentable.releaseName" 
+          :songPresentable="songPresentable" 
           @play-song="tapNewSongItem">
         </new-song-item>
       </div>
@@ -78,7 +78,7 @@
 </template>
 
 <script>
-  import { loadPresentablesList, loadPresentableResourceData } from '../data-loader'
+  import { loadPresentablesList, loadPresentableResourceData, batchLoadPresentablesList, MENU_TAGS } from '../data-loader'
   import NewSongItem from '../components/song-item.vue'
   import SongsListItem from '../components/songs-list-item.vue'
 
@@ -86,16 +86,18 @@
     name: 'home-page',
     components: { NewSongItem, SongsListItem },
     props: {
-      songsMenuList: Array,
-      newSongsList: Array,
-      newSongsMenuPresentable: Object,
+      songsPresentablesMap: Object,
+      songsMenuListMap: Object,
     },
     data() {
       return {
         isPlayingSong: false,
         activeSongPresentableId: '',
         activeSongPercentage: 0,
-        carouselDuration: 5000
+        carouselDuration: 5000,
+        songsMenuList: [],
+        newSongsList: [],
+        newSongsMenuPresentable: null,
       }
     },
     computed: {
@@ -115,9 +117,74 @@
     watch: {
       songsMenuList() {
         window.FreelogApp.$loading.hide()
+      },
+      async newSongsMenuPresentable() {
+        const newSongsMenuPresentable = this.newSongsMenuPresentable
+        try {
+          const data = await loadPresentableResourceData(newSongsMenuPresentable.presentableId)
+          if(data != null) {
+            newSongsMenuPresentable.songsMenuInfo = data
+            await this.fetchNewSongsMenuPresentablesList(newSongsMenuPresentable)
+          }
+        } catch (e) {
+          console.error(e)
+        }
       }
     },
     methods: {
+      init() {
+        this.fetchSongsMenuPresentablesList()
+      },
+      // 歌单集合
+      async fetchSongsMenuPresentablesList() {
+        window.FreelogApp.$loading.show()
+        try {
+          const data = await loadPresentablesList({ tags: MENU_TAGS.join(','), resourceType: 'json', pageSize: 50 })
+          window.FreelogApp.$loading.hide()
+          if(data != null) {
+            data.dataList.forEach(async (p) => {
+              p.songsMenuInfo = await loadPresentableResourceData(p.presentableId)
+              if (p.userDefinedTags.indexOf(MENU_TAGS[0]) > -1) {
+                this.songsMenuList.push(p)
+              }
+              if (p.userDefinedTags.indexOf(MENU_TAGS[1]) > -1) {
+                this.newSongsMenuPresentable = p
+                this.$emit('update:songsMenuListMap', Object.assign(this.songsMenuListMap, {
+                  [p.presentableId]: p
+                }))
+              }
+            })
+          }
+        } catch(e) {
+          console.error(e)
+        }
+      },
+      // 新歌集合
+      async fetchNewSongsMenuPresentablesList(newSongsMenuPresentable) {
+        try {
+          const newSongsInfoList = newSongsMenuPresentable.songsMenuInfo.songsList
+          const releaseNames = newSongsInfoList.map(item => item.releaseName)
+          const data = await batchLoadPresentablesList({ releaseNames })
+          if(data != null) {
+            const songInfoMap = {}, tempMap = {}
+            newSongsInfoList.forEach(songInfo => {
+              songInfoMap[songInfo.releaseName] = songInfo
+            })
+            this.newSongsList = data.dataList.map(p => {
+              const { presentableId, releaseInfo: { releaseName }  } = p
+              p.songInfo = songInfoMap[releaseName]
+              tempMap[releaseName] = p
+              return p
+            })
+            this.$emit('update:songsPresentablesMap', Object.assign(this.songsPresentablesMap, {
+              [newSongsMenuPresentable.presentableId]: tempMap
+            }))
+
+          }
+        } catch(e) {
+          console.error(e)
+        }
+      },
       getCarouseArray(list) {
         const leng = list.length
         const count = Math.ceil(leng / 4)
@@ -137,14 +204,15 @@
       },
       tapNewSongItem(presentable) {
         var { presentableId: songsMenuPresentableId, presentableName: songsMenuPresentableName } = this.newSongsMenuPresentable
-        var { presentableId: songPresentableId, presentableName: songPresentableName } = presentable
+        var { presentableId: songPresentableId, } = presentable
+        var songName = presentable.songInfo.songName
         songsMenuPresentableName = encodeURIComponent(songsMenuPresentableName)
-        songPresentableName = encodeURIComponent(songPresentableName)
+        songName = encodeURIComponent(songName)
         this.$router.push({ 
           path: `/play-list/${songsMenuPresentableId}/${songsMenuPresentableName}`, 
           query: {
             songId: songPresentableId,
-            songName: songPresentableName
+            songName
           } 
         })
       },
@@ -167,9 +235,7 @@
       }
     },
     created() {
-      if(this.songsMenuList.length === 0) {
-        window.FreelogApp.$loading.show()
-      }
+      this.init()
     },
     mounted() {
       if(this.$audio) {

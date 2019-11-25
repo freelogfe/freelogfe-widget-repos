@@ -62,16 +62,16 @@
             })
             var blogConfig = data;
             try {
-              blogConfig.avatarUrl = window.FreelogApp.QI.resolveSubResourceDataUrl({
-                presentableId: data.presentableId,
-                subReleaseId: map[blogConfig.avatar].id,
-                version: map[blogConfig.avatar].v
-              })
-              blogConfig.postImageUrl = window.FreelogApp.QI.resolveSubResourceDataUrl({
-                presentableId: data.presentableId,
-                subReleaseId: map[blogConfig.postImage].id,
-                version: map[blogConfig.avatar].v
-              })
+              blogConfig.avatarUrl = window.FreelogApp.QI.resolveSubResourceDataUrl(
+                data.presentableId,
+                map[blogConfig.avatar].id,
+                map[blogConfig.avatar].v
+              )
+              blogConfig.postImageUrl = window.FreelogApp.QI.resolveSubResourceDataUrl(
+                data.presentableId,
+                map[blogConfig.postImage].id,
+                map[blogConfig.avatar].v
+              )
               
               this.setPageTitle(blogConfig.blogTitle || blogConfig.name)
             } catch (e) {

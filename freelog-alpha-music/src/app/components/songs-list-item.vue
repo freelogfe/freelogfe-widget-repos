@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="song-img-box" @click="tapSongListItem">
-      <el-image :src="presentable.songsMenuCoverUrl" fit="contain"></el-image>
+      <el-image :src="songsMenuCoverUrl" fit="contain"></el-image>
       <i class="el-icon-video-play"></i>
     </div>
     <div class="song-info" >
@@ -19,6 +19,18 @@ export default {
   name: 'new-song-item',
   props: {
     presentable: Object
+  },
+  computed: {
+    songsMenuCoverUrl() {
+      const p = this.presentable
+      let url = 'http://test-frcdn.oss-cn-shenzhen.aliyuncs.com/console/public/img/resource.jpg'
+      if (p && p.releaseInfo && p.releaseInfo.previewImages) {
+        url = p.releaseInfo.previewImages[0]
+      } else if (p.previewImages.length) {
+        url = p.previewImages[0]
+      }
+      return url
+    },
   },
   methods: {
     tapSongListItem() {

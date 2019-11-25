@@ -1,6 +1,6 @@
 <template>
   <div class="song-menu-box">
-    <el-image :src="songsMenuPresentable.songsMenuCoverUrl" fit="contain"></el-image>
+    <el-image :src="songsMenuCoverUrl" fit="contain"></el-image>
     <div class="song-menu-info" v-if="songsMenuInfo">
       <p class="song-m-i-name">{{songsMenuPresentable.presentableName}}</p>
       <p class="song-m-i-author">
@@ -44,6 +44,19 @@ export default {
     isMobile() {
       return window.FreelogApp.Env.isMobile
     },
+    songsMenuCoverUrl() {
+      const p = this.songsMenuPresentable
+      let url = 'http://test-frcdn.oss-cn-shenzhen.aliyuncs.com/console/public/img/resource.jpg'
+      if (p != null) {
+        const { previewImages, releaseInfo } = p
+        if(previewImages && previewImages[0]) {
+          url = previewImages[0]
+        } else if (releaseInfo.previewImages && releaseInfo.previewImages[0]) {
+          url = releaseInfo.previewImages[0]
+        }
+      }
+      return url
+    }
   },
   methods: {
     tapPlayAllSongBtn() {

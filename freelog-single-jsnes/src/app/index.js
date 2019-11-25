@@ -239,7 +239,7 @@ class FreelogSingleJsnes extends HTMLElement {
   renderNes() {
     this.toggleClass(this.$loading, 'visible', 'add')
     const { presentableName, presentableId } = this.dataset
-    const url = window.FreelogApp.QI.resolvePresentableResourceUrl(presentableId)
+    const url = window.FreelogApp.QI.resolvePresentableDataUrl(presentableId)
     this.$nesTitle.innerHTML = presentableName
     return nes_load_url(this.$canvas, url, false)
       .then(() => {

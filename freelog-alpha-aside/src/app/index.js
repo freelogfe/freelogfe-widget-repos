@@ -8,6 +8,7 @@ class FreelogAlphaAside extends HTMLElement {
     const sidebarVisible = this.getAttribute('sidebar-visible')
     const isMultiContent = this.getAttribute('is-multi-content')
     
+    this.isMobile = !!window.FreelogApp.Env.isMobile
     this.sidebarVisible = sidebarVisible === null ? false : sidebarVisible === 'false' ? false : true
     this.isMultiContent = isMultiContent === null ? false : isMultiContent === 'false' ? false : true
     this.expandBtnVisible = false
@@ -42,6 +43,9 @@ class FreelogAlphaAside extends HTMLElement {
     document.addEventListener("keydown", this.handleKeyDown.bind(this), false)
     document.addEventListener("keyup", this.handleKeyUp.bind(this), false)
     window.addEventListener('popstate', this.handlePopState.bind(this), false)
+    if(this.isMobile) {
+      this.addTouchEventListener()
+    }
   }
 
   getDom() {
@@ -73,8 +77,9 @@ class FreelogAlphaAside extends HTMLElement {
   }
 
   getPresentableList(){
-    return window.FreelogApp.QI.fetchPresentablesList({
-            resourceType: this.listTypes.join(',')
+    return window.FreelogApp.QI.pagingGetPresentables({
+            resourceType: this.listTypes.join(','),
+            pageSize: 100
           })
           .then(res => {
             if(res.errcode === 0) {
@@ -97,6 +102,8 @@ class FreelogAlphaAside extends HTMLElement {
   renderNodeTitle() {
     if(window.__auth_info__ && window.__auth_info__.__auth_node_name__) {
       this.$nodeTitleBar.innerHTML = window.__auth_info__.__auth_node_name__
+    }else {
+      this.$nodeTitleBar.innerHTML = ''
     }
   }
 
@@ -157,7 +164,7 @@ class FreelogAlphaAside extends HTMLElement {
   renderPresentable(presentableId, isPushState = false) {
     if(presentableId === '') return 
     const { presentableName, releaseInfo } = this.presentablesMap[presentableId]
-    const previewImg = releaseInfo.previewImages ? releaseInfo.previewImages[0] : ''
+    const previewImg = releaseInfo && releaseInfo.previewImages ? releaseInfo.previewImages[0] : ''
     
     if(this.isMultiContent) {
       const $targetBox = this.$mainContent.querySelector(`[data-presentable-id="${presentableId}"]`)
@@ -317,6 +324,32 @@ class FreelogAlphaAside extends HTMLElement {
         this.changePresentable(presentableId, false)
       }
     }
+  }
+
+  addTouchEventListener() {
+    var self = this
+    if(!self.isMobile) return
+    const $app = self.$app
+    var sPageX, ePageX
+    $app.addEventListener('touchstart', (e) => {
+      sPageX = ePageX = e.targetTouches[0].pageX
+    }, false)
+    $app.addEventListener('touchmove', (e) => {
+      ePageX = e.targetTouches[0].pageX
+    }, false)
+    
+    $app.addEventListener('touchend', (e) => {
+      if(ePageX > sPageX) {
+        if((ePageX - sPageX) > 100) {
+          self.toggleSidebar()
+        }
+      }else {
+        if((sPageX - ePageX) > 20) {
+          self.hideSidebar()
+        }
+      }
+      
+    }, false)
   }
 }
 

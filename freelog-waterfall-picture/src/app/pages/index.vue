@@ -181,17 +181,16 @@
 
     function getData(page = 1) {
         return new Promise(((resolve, reject) => {
-            FreelogApp.QI.fetchPresentablesList({
+            FreelogApp.QI.pagingGetPresentables({
                 page,
                 pageSize: 10,
                 resourceType: 'image',
             }).then(res => {
                 const hostname = ['qi', ...window.location.hostname.split('.').splice(-2)].join('.');
-                const prefix = `//${hostname}/v1/auths/presentables/`;
                     resolve({
                             dataList: res.data.dataList.map((i) => ({
                                 title: i.releaseInfo.releaseName,
-                                src: `${prefix}${i.presentableId}.file`,
+                                src: window.FreelogApp.QI.resolvePresentableDataUrl(i.presentableId)
                                 // resourceID: i.resourceId,
                             })),
                             done: res.data.page * res.data.pageSize > res.data.totalItem,

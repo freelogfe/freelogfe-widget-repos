@@ -102,12 +102,18 @@ class FreelogWidgetDocs extends HTMLElement {
         this.loadCatalogPresentableList()
           .then((docsList) => {
             this.docsList = docsList.map(item => {
-              const { resourceInfo: { previewImages }, updateDate } = item
+              const { resourceInfo, updateDate, previewImages } = item
               const d = new Date(updateDate)
               var year = d.getFullYear(), month = d.getMonth() + 1, date = d.getDate()
               month = month > 9 ? month : '0' + month
               item.updateDate = `${year}-${month}-${date}`
-              item.previewUrl = previewImages[0] || 'http://test-frcdn.oss-cn-shenzhen.aliyuncs.com/console/public/img/resource.jpg'
+              item.previewUrl = 'http://test-frcdn.oss-cn-shenzhen.aliyuncs.com/console/public/img/resource.jpg'
+              if (previewImages && previewImages[0]) {
+                item.previewUrl = previewImages[0]
+              } else if(resourceInfo && resourceInfo.previewImages[0]) {
+                item.previewUrl = resourceInfo && resourceInfo.previewImages[0]
+              }
+              
               return item 
             })
             
@@ -128,9 +134,8 @@ class FreelogWidgetDocs extends HTMLElement {
         loadMDPresentablesList() {
           const docsTags = this.docsTags
           if(this.mdPresentablesList.length === 0) {
-            return this.QI.fetchPresentablesList({ 
+            return this.QI.pagingGetPresentables({ 
               resourceType: "markdown", 
-              projection: 'presentableId,presentableName,userDefinedTags,nodeId,updateDate,releaseInfo,resourceInfo',
               isLoadingResourceInfo: 1, 
               tags: docsTags,
               pageSize: 100
@@ -150,9 +155,8 @@ class FreelogWidgetDocs extends HTMLElement {
           }
         },
         loadCatalogPresentableList() {
-          return window.FreelogApp.QI.fetchPresentablesList({ 
+          return window.FreelogApp.QI.pagingGetPresentables({ 
             resourceType: "catalog",
-            projection: 'presentableId,presentableName,userDefinedTags,nodeId,updateDate,releaseInfo,resourceInfo',
             isLoadingResourceInfo: 1, 
             pageSize: 100
           })
@@ -202,7 +206,7 @@ class FreelogWidgetDocs extends HTMLElement {
             }) 
         },
         loadPresentableData(presentableId) {
-          return window.FreelogApp.QI.fetchPresentableResourceData(presentableId).then(resp => {
+          return window.FreelogApp.QI.getPresentableData(presentableId).then(resp => {
             var isError = !resp.headers.get('freelog-resource-type')
             return isError ? resp.json() : resp.text()
           })

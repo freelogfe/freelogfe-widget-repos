@@ -116,18 +116,20 @@
       getComicsBasePresentables() {
         return loadPresentablesList({ tags: PRESENTABLE_TAGS_BASE.join(',') })
           .then(data => {
-            data.dataList.forEach(p => {
-              if(this.coverPresentable === null && p.userDefinedTags.indexOf(PRESENTABLE_TAGS_BASE[0]) !== -1 ) {
-                this.coverPresentable = p
-                this.comicsCoverUrl = window.FreelogApp.QI.resolvePresentableResourceUrl(p.presentableId)
-              }
-              if(this.introPresentable === null && p.userDefinedTags.indexOf(PRESENTABLE_TAGS_BASE[1]) !== -1 ) {
-                this.introPresentable = p
-              }
-              if(this.chaptersInfoPresentable === null && p.userDefinedTags.indexOf(PRESENTABLE_TAGS_BASE[2]) !== -1 ) {
-                this.chaptersInfoPresentable = p
-              }
-            })
+            if (data != null) {
+              data.dataList.forEach(p => {
+                if(this.coverPresentable === null && p.userDefinedTags.indexOf(PRESENTABLE_TAGS_BASE[0]) !== -1 ) {
+                  this.coverPresentable = p
+                  this.comicsCoverUrl = window.FreelogApp.QI.resolvePresentableDataUrl(p.presentableId)
+                }
+                if(this.introPresentable === null && p.userDefinedTags.indexOf(PRESENTABLE_TAGS_BASE[1]) !== -1 ) {
+                  this.introPresentable = p
+                }
+                if(this.chaptersInfoPresentable === null && p.userDefinedTags.indexOf(PRESENTABLE_TAGS_BASE[2]) !== -1 ) {
+                  this.chaptersInfoPresentable = p
+                }
+              })
+            }
           })
       },
       getComicsInfoData() {
@@ -147,7 +149,6 @@
           return loadPresentableResourceData(this.chaptersInfoPresentable.presentableId)
             .then((res) => {
               if(res.errcode == null) {
-                
                 const data = JSON.parse(res)
                 // 移动端：降序排列，PC端：升序排列
                 data.sort((c1, c2) => {
@@ -172,7 +173,7 @@
             })
             .catch(e => console.warn(e))
         }else {
-          return Promse.reject()
+          return Promise.reject()
         }
       },
       // 显示 漫画章节列表
@@ -200,6 +201,7 @@
       getChaptersPresentablesList(chapterTag) {
         return loadPresentablesList({ tags: chapterTag })
           .then(data => {
+            console.log(JSON.parse(JSON.stringify(data)))
             const map = {}
             const pids = data.dataList.map(p => {
               map[p.releaseInfo.releaseName] = p

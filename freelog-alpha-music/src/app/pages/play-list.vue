@@ -28,7 +28,7 @@
       <div class="song-list-box" v-else>
         <h2>歌单 共{{targetSongsList.length}}首</h2>
         <div v-for="p in targetSongsList" :key="p.presentableId" style="position: relative;">
-          <song-item :presentable="p" @play-song="tapPlaySongBtn"></song-item>
+          <song-item :songPresentable="p" @play-song="tapPlaySongBtn"></song-item>
           <div class="lock-mask-box" v-if="!p.authResult.isAuth">
             <i class="el-icon-lock"></i>
           </div>
@@ -47,7 +47,7 @@
 
 <script>
 
-  import { loadPresentablesList, loadPresentableResourceData, MENU_TAGS } from '../data-loader'
+  import { loadPresentableInfo, loadPresentablesList, loadPresentableResourceData, batchLoadPresentablesList, MENU_TAGS } from '../data-loader'
   import SongItem from '../components/song-item.vue'
   import SongPlayerBar from '../components/player-bar.vue'
   import PlayListInfo from '../components/play-list-info.vue'
@@ -56,9 +56,8 @@
     name: 'home-page',
     components: { SongItem, SongPlayerBar, PlayListInfo },
     props: {
-      songsMenuListMap: Object,
-      newSongsMenuPresentable: Object,
       songsPresentablesMap: Object,
+      songsMenuListMap: Object,
     },
     data() {
       return {
@@ -99,35 +98,28 @@
         },
         deep: true
       },
-      songsMenuInfo() {
-        const { presentableTag, songsList } = this.songsMenuInfo
-        if(presentableTag != null) {
-          switch(presentableTag) {
-            case MENU_TAGS[1]: {
-              this.targetSongsList = this.formatSongsList(songsList, this.songsPresentablesMap[presentableTag])
-              window.FreelogApp.$loading.hide()
-              break
-            }
-            default: {
-              loadPresentablesList({ tags: presentableTag, resourceType: 'audio' })
-                .then(data => {
-                  if(data != null) {
-                    this.songsPresentablesMap[presentableTag] = {}
-                    data.dataList.forEach(p => {
-                      const { releaseInfo: { releaseName, previewImages } } = p
-                      p.songCoverUrl = previewImages[0] ? previewImages[0] : 'http://test-frcdn.oss-cn-shenzhen.aliyuncs.com/console/public/img/resource.jpg'
-                      p.songInfo = {}
-                      p.isPlaying = false
-                      this.songsPresentablesMap[presentableTag][releaseName] = p 
-                    })
-                    this.targetSongsList = this.formatSongsList(songsList, this.songsPresentablesMap[presentableTag])
-                  }
-                })
-                .finally(() => {
-                  window.FreelogApp.$loading.hide()
-                })
-            }
+      async songsMenuInfo() {
+        try {
+          const { songsList } = this.songsMenuInfo
+          const releaseNames = songsList.map(s => s.releaseName)
+          const data = await batchLoadPresentablesList({ releaseNames })
+          if(data != null) {
+            const songInfoMap = {}, tempMap = {}
+            songsList.forEach(songInfo => {
+              songInfoMap[songInfo.releaseName] = songInfo
+            })
+            this.targetSongsList = data.dataList.map((p, index) => {
+              const { presentableId, releaseInfo: { releaseName }  } = p
+              p.songInfo = songInfoMap[releaseName]
+              tempMap[releaseName] = p
+              p.isPlaying = false
+              p.activeSongIndex = index
+              return p
+            })
           }
+          window.FreelogApp.$loading.hide()
+        } catch (error) {
+          console.error(error)
         }
       },
       targetSongsList() {
@@ -152,6 +144,26 @@
       }
     },
     methods: {
+      async init() {
+        const tmpPID = this.songsMenuPresentableId
+        if (this.songsMenuListMap[tmpPID]) {
+          this.songsMenuPresentable = this.songsMenuListMap[tmpPID]
+        } else {
+          const [ info, songsMenuInfo ] = await Promise.all([
+            loadPresentableInfo(tmpPID), 
+            loadPresentableResourceData(tmpPID)
+          ])
+          if(info != null) {
+            this.songsMenuInfo = info.songsMenuInfo = songsMenuInfo
+            this.songsMenuPresentable = info
+            
+            console.log(songsMenuInfo)
+            this.$emit('update:songsMenuListMap', Object.assign(this.songsMenuListMap, {
+              [tmpPID]: this.songsMenuPresentable
+            }))
+          }
+        }
+      },
       resetData(presentable) {
         if(presentable) {
           this.songsMenuPresentable = presentable
@@ -242,13 +254,8 @@
         }
       },
     },
-    mounted() {
-      if(this.songsMenuListMap == null) {
-        window.FreelogApp.$loading.show()
-      }else {
-        const presentable = this.songsMenuListMap[this.songsMenuPresentableId]
-        this.resetData(presentable)
-      }
+    created() {
+      this.init()
     },
   }
 </script>

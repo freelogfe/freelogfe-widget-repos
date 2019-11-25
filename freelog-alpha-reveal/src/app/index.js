@@ -48,15 +48,17 @@ class FreelogAlphaReveal extends HTMLElement {
   }
 
   loadPresentableData(presentableId) {
-    return window.FreelogApp.QI.fetchPresentableResourceData(presentableId).then((res) => {
+    return window.FreelogApp.QI.getPresentableData(presentableId).then((res) => {
       var isError = !res.headers.get('freelog-resource-type')
-      var subReleasesText = res.headers.get('freelog-sub-releases')
+      var entityNid = res.headers.get('freelog-entity-nid')
+      var subReleasesText = res.headers.get('freelog-sub-dependencies')
         try {
-          const subReleases = subReleasesText == null ? [] : JSON.parse(atob(subReleasesText))
+          var subReleases = Buffer.from(subReleasesText,'base64').toString('utf-8')
+          subReleases = JSON.parse(subReleases) 
           this.presentableSubReleases = subReleases.map(subR => {
-            const { v: version, id: subReleaseId, n: releaseName } = subR
-            this.presentableSubReleasesMap[subReleaseId] = { version, subReleaseId, releaseName }
-            this.presentableSubReleasesMap[releaseName] = { version, subReleaseId, releaseName }
+            const { id: subReleaseId, n: releaseName } = subR
+            this.presentableSubReleasesMap[subReleaseId] = { subReleaseId, releaseName, entityNid }
+            this.presentableSubReleasesMap[releaseName] = { subReleaseId, releaseName, entityNid}
             return subR
           })
         }catch(e) {
@@ -77,11 +79,11 @@ class FreelogAlphaReveal extends HTMLElement {
       const releaseName = $tmpImg.attr('data-release-name')
       const tmpR = this.presentableSubReleasesMap[releaseName]
       if(tmpR) {
-        const url = window.FreelogApp.QI.resolveSubResourceDataUrl({
-          presentableId: this.presentableId,
-          subReleaseId: tmpR.subReleaseId,
-          version: tmpR.version
-        })
+        const url = window.FreelogApp.QI.resolveSubDependDataUrl(
+          this.presentableId,
+          tmpR.subReleaseId,
+          tmpR.entityNid
+        )
         $tmpImg.attr('src', url)
       }
     }

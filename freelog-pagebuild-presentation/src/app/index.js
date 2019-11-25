@@ -35,10 +35,10 @@ class FreelogPagebuildPresentation extends HTMLElement {
             if(leng1 === 0) return true
             const leng2 = p.userDefinedTags.length
             const size = new Set([...p.userDefinedTags, ...this.selectedTag]).size
-            if(size === (leng1 + leng2)) {
-              return false
-            }else {
+            if(size === leng2) {
               return true
+            }else {
+              return false
             }
           })
         }
@@ -54,11 +54,11 @@ class FreelogPagebuildPresentation extends HTMLElement {
         fetchPbMarkdownList() {
           const tag = 'pb-md'
           const refPbUsagePrefix = 'pbUsage'
-          return window.FreelogApp.QI.fetchPresentablesList({ tags: tag, isLoadingResourceInfo: 1 })
+          return window.FreelogApp.QI.pagingGetPresentables({ tags: tag, isLoadingResourceInfo: 1 })
             .then(res => {
               if(res.errcode === 0) {
                 this.pbMdList = res.data.dataList.map((p, index) => {
-                  const { userDefinedTags, releaseInfo: { previewImages, releaseId, version }, resourceInfo } = p
+                  const { userDefinedTags, releaseInfo: { previewImages = [], releaseId, version } } = p
                   p.userDefinedTags = userDefinedTags.filter(item => {
                     if(item !== tag) {
                       this.pbTagsSet.add(item)
@@ -68,20 +68,15 @@ class FreelogPagebuildPresentation extends HTMLElement {
                     }
                   })
                   
-                  p.previewImgUrl = previewImages[0] || 'http://test-frcdn.oss-cn-shenzhen.aliyuncs.com/console/public/img/resource.jpg'
+                  p.previewImgUrl = 'http://test-frcdn.oss-cn-shenzhen.aliyuncs.com/console/public/img/resource.jpg'
+                  if(previewImages.length) {
+                    p.previewImgUrl = previewImages[0]
+                  }
                   p.usageMdBoxheight = 0
                   p.mdBoxVisible = false
                   p.pbMdBoxRef = refPbUsagePrefix + index
-                  p.pbDemoSite = resourceInfo.meta.pbDemoSite || ''
                   p.pbReleaseDetailPageUrl = `http://console.testfreelog.com/release/detail/${releaseId}?version=${version}`
                   this.renderPbMarkdown(p)
-
-                  this.fetchPresentableDetail(p.presentableId)
-                    .then(res => {
-                      if(res.errcode === 0) {
-                        p.releaseInfo = res.data.releaseInfo
-                      }
-                    })
                   return p
                 })
                 
@@ -124,11 +119,8 @@ class FreelogPagebuildPresentation extends HTMLElement {
               window.scrollTo({ top: 0, behavior: "instant" })
             })
         },
-        fetchPresentableDetail(presentableId) {
-          return window.FreelogApp.QI.fetchPresentableInfo(presentableId)
-        },
         fetchDemoPreviewSiteData() {
-          return window.FreelogApp.QI.fetchPresentablesList({ resourceType: 'json', tags: 'demo-site' })
+          return window.FreelogApp.QI.pagingGetPresentables({ resourceType: 'json', tags: 'demo-site' })
             .then(res => {
               var target = null
               if(res.errcode === 0) {
@@ -153,7 +145,7 @@ class FreelogPagebuildPresentation extends HTMLElement {
                   const map = JSON.parse(res)
                   this.pbDemoPreviewSiteMap = map
                 }catch(e) {
-                  console.warning('fetchDemoPreviewSiteData', e)
+                  console.warn('fetchDemoPreviewSiteData', e)
                 }
               }
             })
@@ -173,7 +165,7 @@ class FreelogPagebuildPresentation extends HTMLElement {
           }
         },
         loadPresentableData(presentableId) {
-          return window.FreelogApp.QI.fetchPresentableResourceData(presentableId).then(resp => {
+          return window.FreelogApp.QI.getPresentableData(presentableId).then(resp => {
             var isError = !resp.headers.get('freelog-resource-type')
             return isError ? resp.json() : resp.text()
           })
