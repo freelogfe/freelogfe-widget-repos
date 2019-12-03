@@ -15,11 +15,11 @@ module.exports = merge(baseConfig, {
     nodeEnv: 'production',
     minimizer: [
       new UglifyJsPlugin({
-        uglifyOptions: {
-          compress: {
-            warnings: false
-          }
-        },
+        // uglifyOptions: {
+        //   compress: {
+        //     warnings: false
+        //   }
+        // },
         sourceMap: true,
         parallel: true
       }),
