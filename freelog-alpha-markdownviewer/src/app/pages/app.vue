@@ -38,8 +38,6 @@
 
 <script>
 import MarkdownParser from '@freelog/freelog-markdown-parser'
-
-const _cachedResponse = {}
 export default {
   name: 'app',
 
@@ -109,7 +107,7 @@ export default {
           showToc: !this.isMobile,
           presentableId,
           entityNid,
-          subReleases: this.presentableSubReleases[presentableId],
+          subReleases: this.presentableSubReleases[presentableId] || [],
           renderImageError($el, data) {
             if ($el) {
               $el.src = ''
@@ -146,9 +144,7 @@ export default {
         }
       })
     },
-    changeMarkdownView() {
-
-    },
+    changeMarkdownView() {},
   }
 }
 </script>

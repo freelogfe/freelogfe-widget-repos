@@ -41,7 +41,7 @@ var onloadAboutMe = createLoader(function (callback) {
 });
 
 function loadPresentablesByTags(tags) {
-  return window.FreelogApp.QI.fetchPresentablesList({
+  return window.FreelogApp.QI.pagingGetPresentables({
     tags,
     isLoadingResourceInfo: 1
   }).then(res => {
@@ -59,10 +59,20 @@ function loadBlogConfig() {
       if (data.length) {
         var presentable = data[0]
         if (presentable) {
-          return window.FreelogApp.QI.fetchPresentableResourceData(presentable.presentableId)
+          return window.FreelogApp.QI.getPresentableData(presentable.presentableId)
             .then(res => {
-              const subReleases = window.atob(res.headers.get('freelog-sub-releases'))
-              presentable.subReleases = JSON.parse(subReleases)
+              var subReleasesText = res.headers.get('freelog-sub-dependencies')
+              const entityNid = res.headers.get('freelog-entity-nid')
+              try {
+                let subReleases = Buffer.from(subReleasesText,'base64').toString('utf-8')
+                subReleases = JSON.parse(subReleases) 
+                presentable.subReleases = subReleases.map(item => {
+                  item.entityNid = entityNid
+                  return item
+                })
+              }catch(e) {
+                console.error(e)
+              }
               return res.json().then(data => {
                 return Object.assign(presentable, data)
               })
@@ -79,10 +89,11 @@ function loadBlogConfig() {
 
 const presentableMap = {}
 var onloadArticles = createLoader(function (callback) {
-  return window.FreelogApp.QI.fetchPresentablesList({
+  return window.FreelogApp.QI.pagingGetPresentables({
     tags: 'article',
     resourceType: 'markdown',
-    isLoadingResourceInfo: 1
+    isLoadingResourceInfo: 1,
+    pageSize: 50
   }).then(res => {
     if (res.errcode === 0) {
       res.data.dataList.forEach(presentable => {
@@ -99,11 +110,11 @@ var onloadArticles = createLoader(function (callback) {
 });
 
 function loadPresentableInfo(presentableId) {
-  return window.FreelogApp.QI.fetchPresentableInfo(presentableId)
+  return window.FreelogApp.QI.getPresentable(presentableId)
 }
 
 function requestPresentableData(presentableId) {
-  return window.FreelogApp.QI.fetchPresentableResourceData(presentableId)
+  return window.FreelogApp.QI.getPresentableData(presentableId)
     .then(res => {
       var contentType = decodeURIComponent(res.headers.get('Content-Type'))
       var article = {}
@@ -123,8 +134,21 @@ function requestPresentableData(presentableId) {
             })
         })
       }else {
+        var subReleasesText = res.headers.get('freelog-sub-dependencies')
+        article.entityNid = res.headers.get('freelog-entity-nid')
+        try {
+          let subReleases = Buffer.from(subReleasesText,'base64').toString('utf-8')
+          subReleases = JSON.parse(subReleases) 
+          article.subReleases = subReleases.map(item => {
+            item.entityNid = entityNid
+            return item
+          })
+        }catch(e) {
+          console.error(e)
+        }
         return res.text().then(content => {
           article.content = content
+          article.presentableId
           if(presentableMap[presentableId]) {
             article.presentableName = presentableMap[presentableId].presentableName
           }

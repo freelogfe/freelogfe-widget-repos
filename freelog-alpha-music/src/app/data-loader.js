@@ -19,7 +19,7 @@ export function loadPresentableInfo(presentableId) {
 }
 
 export function loadPresentablesList(params) {
-  params = Object.assign({ isLoadingResourceInfo: 1, isOnline: 1 }, params)
+  params = Object.assign({ isLoadingResourceInfo: 1, isOnline: 1, pageSize: 20 }, params)
   return window.FreelogApp.QI.pagingGetPresentables(params)
     .catch(showErrorMessage)
     .then(res => {

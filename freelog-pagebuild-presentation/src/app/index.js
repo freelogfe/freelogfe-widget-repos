@@ -22,7 +22,7 @@ class FreelogPagebuildPresentation extends HTMLElement {
           refPbUsagePrefix: 'pbUsage',
           pbMdList: [],
           pbMdDataMap: {},
-          pbDemoPreviewSiteMap: {},
+          pbDemoPreviewSiteMap: null,
           pbTagsSet: new Set(),
           pbTags: [],
           selectedTag: []
@@ -40,6 +40,23 @@ class FreelogPagebuildPresentation extends HTMLElement {
             }else {
               return false
             }
+          }).map(p => p.presentableId)
+        }
+      },
+      watch: {
+        pbDemoPreviewSiteMap() {
+          this.pbMdList = this.pbMdList.map(p => {
+            const { releaseInfo } = p
+            if (releaseInfo && releaseInfo.releaseName) {
+              const tmp = this.pbDemoPreviewSiteMap[releaseInfo.releaseName]
+              if (tmp) {
+                p.PB_releaseName = tmp['PB-releaseName']
+                const releaseName = encodeURIComponent(p.PB_releaseName) 
+                p.pbReleaseDetailPageUrl = `http://console.testfreelog.com/release/detail?releaseName=${releaseName}`
+                p.demoSite = tmp['PB-demo-site']
+              }
+            }
+            return p
           })
         }
       },
@@ -75,7 +92,6 @@ class FreelogPagebuildPresentation extends HTMLElement {
                   p.usageMdBoxheight = 0
                   p.mdBoxVisible = false
                   p.pbMdBoxRef = refPbUsagePrefix + index
-                  p.pbReleaseDetailPageUrl = `http://console.testfreelog.com/release/detail/${releaseId}?version=${version}`
                   this.renderPbMarkdown(p)
                   return p
                 })
@@ -120,7 +136,7 @@ class FreelogPagebuildPresentation extends HTMLElement {
             })
         },
         fetchDemoPreviewSiteData() {
-          return window.FreelogApp.QI.pagingGetPresentables({ resourceType: 'json', tags: 'demo-site' })
+          return window.FreelogApp.QI.pagingGetPresentables({ resourceType: 'json', tags: 'demo-site', pageSize: 99 })
             .then(res => {
               var target = null
               if(res.errcode === 0) {

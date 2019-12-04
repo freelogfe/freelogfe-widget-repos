@@ -73,6 +73,7 @@ class FreelogSingleJsnes extends HTMLElement {
   }
 
   bindEvent() {
+    const self = this
     window.onresize = this.setNesBoxSize.bind(this)
     this.getDom()
     this.querySelector('.modal-body table tbody').addEventListener('click', this.handleChangeKey.bind(this), false)
@@ -91,18 +92,19 @@ class FreelogSingleJsnes extends HTMLElement {
   }
 
   getDom() {
-    this.$nesTitle = this.querySelector('.nes-title')
-    this.$modalCloseBtn = this.querySelector('.modal-header .modal-close-btn')
-    this.$modalSaveBtn = this.querySelector('.modal-footer .modal-save-btn')
-    this.$controlsBtn = this.querySelector('.controls-btn')
-    this.$fullScreenBtn = this.querySelector('.full-screen-btn')
-    this.$refreshBtn = this.querySelector('.refresh-btn')
-    this.$playerBtn = this.querySelector('.start-btn')
-    this.$nesBtnGroup = this.querySelector('.nes-btn-group')
-    this.$loudSpeaker = this.querySelector('.nes-loud-speaker')
-    this.$canvas = this.querySelector('#nes-canvas')
-    this.$loading = this.querySelector('.f-loading')
-    this.$gamepadList = this.querySelector('.modal-box .gamepad-list')
+    const self = this
+    self.$nesTitle = self.querySelector('.nes-title')
+    self.$modalCloseBtn = self.querySelector('.modal-header .modal-close-btn')
+    self.$modalSaveBtn = self.querySelector('.modal-footer .modal-save-btn')
+    self.$controlsBtn = self.querySelector('.controls-btn')
+    self.$fullScreenBtn = self.querySelector('.full-screen-btn')
+    self.$refreshBtn = self.querySelector('.refresh-btn')
+    self.$playerBtn = self.querySelector('.start-btn')
+    self.$nesBtnGroup = self.querySelector('.nes-btn-group')
+    self.$loudSpeaker = self.querySelector('.nes-loud-speaker')
+    self.$canvas = self.querySelector('#nes-canvas')
+    self.$loading = self.querySelector('.f-loading')
+    self.$gamepadList = self.querySelector('.modal-box .gamepad-list')
   }
 
   initNes() {
@@ -138,19 +140,10 @@ class FreelogSingleJsnes extends HTMLElement {
         }
       },
       methods: {
-        init() {
-          
-        },
-        closeModal() {
-
-        },
+        closeModal() {},
       },
-      created() {
-        this.init()
-      },
-      mounted() {
-        
-      },
+      created() {},
+      mounted() {},
     })
     // 创建 Modal 实例，并挂载到一个元素上。
     this.modalInstance = new Modal().$mount('.modal-box')
@@ -190,13 +183,13 @@ class FreelogSingleJsnes extends HTMLElement {
   }
 
   rendesControls() {
-    const player1KeysArray = this.keysArray.filter(item => item.player === 1)
-    const player2KeysArray = this.keysArray.filter(item => item.player === 2)
+    const p1KeysArray = this.keysArray.filter(item => item.player === 1)
+    const p2KeysArray = this.keysArray.filter(item => item.player === 2)
     const player2KeyMap = {}
-    player2KeysArray.forEach(item => {
+    p2KeysArray.forEach(item => {
       player2KeyMap[item.value] = item
     })
-    this.querySelector('.modal-body table tbody').innerHTML = player1KeysArray.sort((k1, k2) => {
+    this.querySelector('.modal-body table tbody').innerHTML = p1KeysArray.sort((k1, k2) => {
       if(k1.value > k2.value) {
         return 1
       }else if(k2.value > k1.value){
@@ -233,7 +226,6 @@ class FreelogSingleJsnes extends HTMLElement {
       $previewImg.setAttribute('src', previewImage)
       this.$nesBtnGroup.appendChild($previewImg)
     }
-    
   }
 
   renderNes() {

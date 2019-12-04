@@ -79,7 +79,7 @@ class FreelogAlphaAside extends HTMLElement {
   getPresentableList(){
     return window.FreelogApp.QI.pagingGetPresentables({
             resourceType: this.listTypes.join(','),
-            pageSize: 100
+            pageSize: 99
           })
           .then(res => {
             if(res.errcode === 0) {

@@ -54,6 +54,8 @@ class FreelogWidgetDocs extends HTMLElement {
           mdPresentablesList: [],
           mdPresentablesMap: {},
           markdownDataMap: {},
+          entityNidMap: {},
+          presentableSubReleasesMap: {},
           activeMdData: '',
           prevItem: null,
           nextItem: null,
@@ -208,6 +210,15 @@ class FreelogWidgetDocs extends HTMLElement {
         loadPresentableData(presentableId) {
           return window.FreelogApp.QI.getPresentableData(presentableId).then(resp => {
             var isError = !resp.headers.get('freelog-resource-type')
+            var subReleasesText = resp.headers.get('freelog-sub-dependencies')
+            this.entityNidMap[presentableId] = resp.headers.get('freelog-entity-nid')
+            try {
+              let subReleases = Buffer.from(subReleasesText,'base64').toString('utf-8')
+              subReleases = JSON.parse(subReleases) 
+              this.presentableSubReleasesMap[presentableId] = subReleases
+            }catch(e) {
+              console.error(e)
+            }
             return isError ? resp.json() : resp.text()
           })
         },
@@ -246,7 +257,8 @@ class FreelogWidgetDocs extends HTMLElement {
                 showToc: false,
                 container: this.$refs.mdViewer,
                 presentableId,
-                subReleases: [],
+                entityNid: this.entityNidMap[presentableId],
+                subReleases: this.presentableSubReleasesMap[presentableId] || [],
                 renderImageError($el, data) {
                   if ($el) {
                     $el.src = ''
@@ -273,7 +285,6 @@ class FreelogWidgetDocs extends HTMLElement {
           var self = this
           historyStateHandler = function () {
             self.resolvelocationHash()
-            console.log('run in docs! - popstate')
           }
           window.addEventListener('popstate', historyStateHandler)
         },

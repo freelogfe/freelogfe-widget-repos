@@ -29,11 +29,11 @@ function handleErrorResponse(response){
 }
 
 var onloadBookDetail = createLoader(function (callback) {
-  window.FreelogApp.QI.fetchPresentablesList({ tags: 'book-intro', resourceType: 'json', isLoadingResourceInfo: 1 })
+  window.FreelogApp.QI.pagingGetPresentables({ tags: 'book-intro', resourceType: 'json', isLoadingResourceInfo: 1 })
     .then(res => {
       if (res.errcode === 0 && res.data.dataList.length) {
         const { presentableId } = res.data.dataList[0]
-        window.FreelogApp.QI.fetchPresentableResourceData(presentableId)
+        window.FreelogApp.QI.getPresentableData(presentableId)
           .then(resp => resp.json())
           .then(data => {
             if (data && !data.errcode) {
@@ -49,7 +49,7 @@ var onloadBookDetail = createLoader(function (callback) {
 })
 
 function loadPresentablesByTags(tags) {
-  return window.FreelogApp.QI.fetchPresentablesList({ tags }).then(res => res.json())
+  return window.FreelogApp.QI.pagingGetPresentables({ tags }).then(res => res.json())
 }
 
 function resolveChapters(chapters) {
@@ -83,7 +83,7 @@ function resolveChapters(chapters) {
 }
 
 var onloadChapters = createLoader(function (callback) {
-  window.FreelogApp.QI.fetchPresentablesList({ tags: 'chapter', isLoadingResourceInfo: 1 })
+  window.FreelogApp.QI.pagingGetPresentables({ tags: 'chapter', isLoadingResourceInfo: 1 })
     .then(res => {
       if (res.errcode === 0 && res.data.dataList.length) {
         var data = resolveChapters(res.data.dataList)
@@ -96,7 +96,7 @@ var onloadChapters = createLoader(function (callback) {
 
 function requestPresentableData(presentableId) {
   var nodeId = window.__auth_info__.__auth_node_id__
-  return window.FreelogApp.QI.fetchPresentableResourceData(presentableId)
+  return window.FreelogApp.QI.getPresentableData(presentableId)
     .then(res => {
       var meta = decodeURIComponent(res.headers.get('freelog-meta'))
       var chapter
@@ -107,9 +107,9 @@ function requestPresentableData(presentableId) {
       }
       if (!chapter) {
         return res.json().then(errResponse => {
-          return window.FreelogApp.QI.fetchPresentableInfo(presentableId)
+          return window.FreelogApp.QI.getPresentable(presentableId)
             .then(res => {
-              chapter = res.data.resourceInfo.meta || {
+              chapter = res.data.resourceInfo && res.data.resourceInfo.meta || {
                 "chapterName": "第一章 秦羽",
                 "volume": 1,
                 "chapter": 1,

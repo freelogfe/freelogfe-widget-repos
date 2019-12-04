@@ -52,11 +52,12 @@
       }
     },
     mounted() {
-      console.log('this.showToc --', this.showToc)
+      const { presentableId, entityNid, subReleases = [] } = this.data
       this.parser = new MarkdownParser({
         container: this.$el.querySelector('.js-article-content .markdown-body'),
-        presentableId: this.data.presentableId,
-        subReleases: [],
+        presentableId,
+        subReleases,
+        entityNid,
         showToc: this.showToc,
         afterRender: (config) => {
           this.hasToc =  this.showToc ? !!config.tocs.length : this.showToc;

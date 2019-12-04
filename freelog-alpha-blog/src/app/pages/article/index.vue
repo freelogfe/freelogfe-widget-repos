@@ -1,6 +1,6 @@
 <template>
   <div class="blog-article-view">
-    <article-viewer :data="article" @reload="render"></article-viewer>
+    <article-viewer :data="article" @reload="render" v-if="article.content !== ''"></article-viewer>
   </div>
 </template>
 

@@ -33,7 +33,6 @@ class FreelogAlphaReveal extends HTMLElement {
           const $app = this.querySelector('.freelog-alpha-reveal-app')
           if(res.errcode == null) {
             $app.innerHTML = this.resolveFreelogImg(res)
-            // $app.innerHTML = res
             return Promise.resolve()
           }else {
             $app.innerHTML = `<div class="auth-box center">授权未通过！</div>`
@@ -49,14 +48,14 @@ class FreelogAlphaReveal extends HTMLElement {
 
   loadPresentableData(presentableId) {
     return window.FreelogApp.QI.getPresentableData(presentableId).then((res) => {
-      var isError = !res.headers.get('freelog-resource-type')
-      var entityNid = res.headers.get('freelog-entity-nid')
-      var subReleasesText = res.headers.get('freelog-sub-dependencies')
+      let isError = !res.headers.get('freelog-resource-type')
+      let entityNid = res.headers.get('freelog-entity-nid')
+      let subReleasesText = res.headers.get('freelog-sub-dependencies')
         try {
-          var subReleases = Buffer.from(subReleasesText,'base64').toString('utf-8')
+          var subReleases = Buffer.from(subReleasesText, 'base64').toString('utf-8')
           subReleases = JSON.parse(subReleases) 
           this.presentableSubReleases = subReleases.map(subR => {
-            const { id: subReleaseId, n: releaseName } = subR
+            const { id: subReleaseId, name: releaseName } = subR
             this.presentableSubReleasesMap[subReleaseId] = { subReleaseId, releaseName, entityNid }
             this.presentableSubReleasesMap[releaseName] = { subReleaseId, releaseName, entityNid}
             return subR
@@ -79,11 +78,7 @@ class FreelogAlphaReveal extends HTMLElement {
       const releaseName = $tmpImg.attr('data-release-name')
       const tmpR = this.presentableSubReleasesMap[releaseName]
       if(tmpR) {
-        const url = window.FreelogApp.QI.resolveSubDependDataUrl(
-          this.presentableId,
-          tmpR.subReleaseId,
-          tmpR.entityNid
-        )
+        const url = window.FreelogApp.QI.resolveSubDependDataUrl(this.presentableId, tmpR.subReleaseId, tmpR.entityNid)
         $tmpImg.attr('src', url)
       }
     }

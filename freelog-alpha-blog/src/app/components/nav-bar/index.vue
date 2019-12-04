@@ -58,19 +58,19 @@
           if (data && data.subReleases) {
             const map = {}
             data.subReleases.forEach(item => {
-              map[item.n] = item
+              map[item.name] = item
             })
             var blogConfig = data;
             try {
-              blogConfig.avatarUrl = window.FreelogApp.QI.resolveSubResourceDataUrl(
+              blogConfig.avatarUrl = window.FreelogApp.QI.resolveSubDependDataUrl(
                 data.presentableId,
                 map[blogConfig.avatar].id,
-                map[blogConfig.avatar].v
+                map[blogConfig.avatar].entityNid
               )
-              blogConfig.postImageUrl = window.FreelogApp.QI.resolveSubResourceDataUrl(
+              blogConfig.postImageUrl = window.FreelogApp.QI.resolveSubDependDataUrl(
                 data.presentableId,
                 map[blogConfig.postImage].id,
-                map[blogConfig.avatar].v
+                map[blogConfig.avatar].entityNid
               )
               
               this.setPageTitle(blogConfig.blogTitle || blogConfig.name)
