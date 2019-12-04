@@ -1,71 +1,36 @@
-# freelog-video-player
+# freelog-video-player 视频播放器
 
 ## 功能介绍
-A freelog widget
+对视频，进行展示和播放
+
+<!-- ![效果演示](doc/source/display.jpeg) -->
 
 ## 节点使用说明
 
 ### 节点资源配置说明
-节点中，插件须搭配如下资源方可使用
 
-#### 资源一：`头图` 
-- 描述：页面头部封面图
-- 类型：image
-- 是否必须：是
-- 标签：无
+1. 节点与对应的 PB 进行签约
+2. 设置对应策略
+3. 设置为上线
+4. 与对应的图片 video 类型的资源签约到该节点下
 
-#### 资源二：`剧集 - 导航` 
-- 描述：通过给资源打标签的方式，动态控制剧集导航
-- 资源类型：json
-- 是否必须：是
-- 标签：
+## 在 PB 中使用 widget
 
-|名称|是否必须 |描述|
-|---|---|---|
-|nav-tags|是|用于标记该JSON资源，方便接口查询|
-|nav-1-200|是|表示1-200的剧集导航|
-
-- meta: 无
-
-- 资源内容：
-
-```
-[{}]
-```
-
-## 开发者使用说明
-
-### 调用方式
-|属性（参数）|必填|描述|
-|---|---|---|
-|data-widget-src|无|widget的资源ID|
-
+在 PB 的 html 中嵌入以下 html 片段，引用该 widget
 ```html
-<!--在PB中引用-->
-<freelog-video-player  class="js-wc-widget" data-widget-src="d2686bda89418e51bae5739a5411f245f0e0d78c"></freelog-video-player>
+<freelog-video-player></freelog-video-player>
 ```
 
-```javascript
-// JS中调用
-window.FreelogApp.QI.requireSubSource('d2686bda89418e51bae5739a5411f245f0e0d78c')
-    .then(res => {
-        var elem = document.createElement('freelog-video-player')
-        document.querySelector('body').append(elem)
-    })
-```
-
-
+<!--
 ### 依赖资源
 |资源名称|资源ID|
 |---|---|
-|无|无|
+|12345123451234/freelog-waterfall-picture|5d512e14499b2f0029d74f7b|
 
 
 ### 资源meta
 无
+-->
 
-
-### 效果图
-![image](your image url)
 
 
