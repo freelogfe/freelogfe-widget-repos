@@ -92,8 +92,9 @@
         return new Promise((resolve, reject) => {
             const params = {
                 resourceType: 'video',
+                pageSize: 100,
             };
-            FreelogApp.QI.fetchPresentablesList(params).then(res => {
+          FreelogApp.QI.pagingGetPresentables(params).then(res => {
 
                 const hostname = ['qi', ...window.location.hostname.split('.').splice(-2)].join('.');
                 const prefix = `//${hostname}/v1/auths/presentables/`;

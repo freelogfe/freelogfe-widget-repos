@@ -18,9 +18,9 @@
 
 在 PB 的 html 中嵌入以下 html 片段，引用该 widget
 ```html
-<freelog-waterfall-picture  class="js-wc-widget" data-widget-src="d2686bda89418e51bae5739a5411f245f0e0d78c"></freelog-waterfall-picture>
+<freelog-waterfall-picture  class="js-wc-widget"></freelog-waterfall-picture>
 ```
-
+<!--
 ### 依赖资源
 |资源名称|资源ID|
 |---|---|
@@ -29,6 +29,7 @@
 
 ### 资源meta
 无
+-->
 
 
 
