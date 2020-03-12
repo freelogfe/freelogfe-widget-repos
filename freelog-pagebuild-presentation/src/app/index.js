@@ -52,7 +52,8 @@ class FreelogPagebuildPresentation extends HTMLElement {
               if (tmp) {
                 p.PB_releaseName = tmp['PB-releaseName']
                 const releaseName = encodeURIComponent(p.PB_releaseName) 
-                p.pbReleaseDetailPageUrl = `http://console.testfreelog.com/release/detail?releaseName=${releaseName}`
+                const host = window.FreelogApp.Env.isTest ? 'console.testfreelog.com' : 'console.freelog.com'
+                p.pbReleaseDetailPageUrl = `//${host}/release/detail?releaseName=${releaseName}`
                 p.demoSite = tmp['PB-demo-site']
               }
             }

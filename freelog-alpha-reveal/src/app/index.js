@@ -41,6 +41,7 @@ class FreelogAlphaReveal extends HTMLElement {
         })
         .then(() => {
           this.renderReveal()
+          this.showFullScreenTip()
         })
         .catch(e => console.log(e))
     }
@@ -108,6 +109,14 @@ class FreelogAlphaReveal extends HTMLElement {
         ]
       })
     })
+  }
+
+  showFullScreenTip() {
+    const $tip = this.querySelector('.f-fullscreen-tip')
+    $tip.className = 'f-fullscreen-tip visible'
+    setTimeout(() => {
+      $tip.className = 'f-fullscreen-tip hidden'
+    }, 3000)
   }
 }
 

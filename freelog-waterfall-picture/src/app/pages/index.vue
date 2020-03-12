@@ -110,6 +110,7 @@
                 this.loading = 1;
                 getData(this.page)
                     .then(result => {
+                        console.log('result ---', result)
                         this.bufferList = result.dataList;
                         this.images = [
                             ...this.images,
@@ -186,10 +187,9 @@
                 pageSize: 10,
                 resourceType: 'image',
             }).then(res => {
-                const hostname = ['qi', ...window.location.hostname.split('.').splice(-2)].join('.');
                     resolve({
                             dataList: res.data.dataList.map((i) => ({
-                                title: i.releaseInfo.releaseName,
+                                title: i.releaseInfo && i.releaseInfo.releaseName || '',
                                 src: window.FreelogApp.QI.resolvePresentableDataUrl(i.presentableId)
                                 // resourceID: i.resourceId,
                             })),

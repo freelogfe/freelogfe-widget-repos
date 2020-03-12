@@ -18,7 +18,6 @@
   export default {
     name: 'comics-tab',
     props: {
-      tabs: Array,
       activeTabName: String,
     },
     data() {

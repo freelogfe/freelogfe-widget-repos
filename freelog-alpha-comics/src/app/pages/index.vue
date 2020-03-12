@@ -2,7 +2,7 @@
   <div class="c-container">
     <comics-header :cover-url="comicsCoverUrl" :comics-info="comicsInfo"></comics-header>
    
-    <comics-tab class="c-content-mobile" :activeTabName.sync="activeTabName" :tabs="tabLabels" v-if="isMobile">
+    <comics-tab class="c-content-mobile" :activeTabName.sync="activeTabName"  v-if="isMobile">
       <div class="comics-description" :label="tabLabels[0]" v-show="activeTabName === tabLabels[0]">
         <template v-if="comicsInfo != null">
           <h2>作品简介</h2>
@@ -107,7 +107,6 @@
             return this.getComicsChaptersListInfoData()
           })
           .then(() => {
-
             this.showComicsChaptersList(this.loadedChaptersInfoCount)
             this.loadedChaptersInfoCount += 1
             this.loadingVisible = false
@@ -209,7 +208,6 @@
             }).join(',')
             this.chapterPresentableMap = Object.assign({}, this.chapterPresentableMap, map)
           })
-          
       },
       // 显示「漫画章节」
       showChapter(data) {

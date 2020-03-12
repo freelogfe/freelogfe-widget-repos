@@ -16,7 +16,7 @@
         <div class="js-md-title">
           <div class="article-title" v-if="presentable">
             <time :datetime="presentable.date">{{presentable.date}}</time>
-            <h2>{{presentable.presentableName}}</h2>
+            <h2>{{presentableName}}</h2>
           </div>
         </div>
         <div class="md-content-viewer article-content">
@@ -125,13 +125,15 @@ export default {
       }else {
         // auth不通过
         this.authErrorData = presentableData
-        errorInfo = this.resolveErrorInfo(presentableData)
+        this.errorInfo = this.resolveErrorInfo(presentableData)
       }
     },
     resolveErrorInfo(resp) {
       var App = window.FreelogApp
-      var errInfo = App.getErrorInfo(resp)
-      return errInfo
+      return {
+        desc: '存在授权问题',
+        tip: resp.msg
+      }
     },
     errorHandler() {
       var self = this

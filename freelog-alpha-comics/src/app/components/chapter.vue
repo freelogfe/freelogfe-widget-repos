@@ -58,7 +58,7 @@
         if(this.chapterAuthResult != null) {
           let fSubReleases = this.chapterAuthResult['subReleases']
           let entityNid = this.chapterAuthResult['freelog-entity-nid']
-          console.log(fSubReleases, entityNid)
+          console.log(' --- ++= --', fSubReleases, entityNid)
           
           const subReleasesArr = fSubReleases
           return subReleasesArr.map(subR => {
@@ -89,7 +89,6 @@
         const { presentableId } = this.chapterPresentable
         const imagesUrlList = imagesList.map(imgReleaseName => {
           const subRelease = this.subReleasesMap[imgReleaseName]
-          console.log('subRelease --', imgReleaseName, subRelease)
           var url = ''
           if(subRelease != null) {
             const { id, name, entityNid } = subRelease
@@ -117,7 +116,6 @@
         }catch(e) {
           console.log('e --', e)
         }
-          
       },
     },
   }
