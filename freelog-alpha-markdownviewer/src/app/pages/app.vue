@@ -37,7 +37,8 @@
 </template>
 
 <script>
-import MarkdownParser from '@freelog/freelog-markdown-parser'
+// import MarkdownParser from '@freelog/freelog-markdown-parser'
+import MarkdownParser from '@freelog/freelog-markdown-parser/markdown/index'
 export default {
   name: 'app',
 
@@ -155,7 +156,7 @@ export default {
 <style lang="less" scoped>
   .freelog-alpha-markdownviewer-index {
     .wrapper {
-      padding: 10px 0 15px 0;
+      padding: 15px 0;
       background: white;
       min-height: 100vh;
     }
@@ -201,8 +202,8 @@ export default {
 
     .md-viewer-wrap {
       background: #fff;
-      margin-left: 10px;
-      margin-right: 280px;
+      margin-left: 35px;
+      margin-right: 330px;
       overflow: auto;
     }
 
@@ -211,8 +212,8 @@ export default {
     }
 
     .article-title {
-      margin-bottom: 10px;
-      padding: 15px 12px;
+      margin-bottom: 5px;
+      padding: 20px 30px;
       border-bottom: 1px solid #e2edf9;
 
       h2 { font-size: 30px; }
@@ -234,7 +235,7 @@ export default {
     }
 
     .article-content {
-      padding: 12px;
+      padding: 20px 30px;
       overflow: auto;
     }
 
@@ -280,7 +281,7 @@ export default {
 
 @media screen and (max-width: 768px) {
   .freelog-alpha-markdownviewer-index {
-    .md-viewer-wrap { margin-right: 10px; }
+    .md-viewer-wrap { margin-right: 15px; }
   }
 }
 </style>

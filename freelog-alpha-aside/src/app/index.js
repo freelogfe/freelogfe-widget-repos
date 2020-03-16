@@ -7,11 +7,13 @@ class FreelogAlphaAside extends HTMLElement {
     this.innerHTML = htmlStr
     const sidebarVisible = this.getAttribute('sidebar-visible')
     const isMultiContent = this.getAttribute('is-multi-content')
+    const expandBtnVisibleAlway = this.getAttribute('expand-btn-visible-alway')
     
     this.isMobile = !!window.FreelogApp.Env.isMobile
     this.sidebarVisible = sidebarVisible === null ? false : sidebarVisible === 'false' ? false : true
     this.isMultiContent = isMultiContent === null ? false : isMultiContent === 'false' ? false : true
-    this.expandBtnVisible = false
+    this.expandBtnVisibleAlway = expandBtnVisibleAlway === null ? false : expandBtnVisibleAlway === 'false' ? false : true
+    this.expandBtnVisible = this.expandBtnVisibleAlway
     this.sidebarTimer = null
     this.expandBtnTimer = null
     this.keyPressedMap = {}
@@ -65,9 +67,10 @@ class FreelogAlphaAside extends HTMLElement {
     this.renderNodeTitle()
     this.getPresentableList()
     if(this.sidebarVisible) {
-      this.sidebarTimer = setTimeout(() => {
-        this.toggleClass(this.$app, 'hide-sidebar')
-      }, 10000)
+      this.toggleClass(this.$app, 'hide-sidebar', 'delete')
+      // this.sidebarTimer = setTimeout(() => {
+      //   this.toggleClass(this.$app, 'hide-sidebar')
+      // }, 10000)
     }else {
       this.showExpanderBtn()
     }
@@ -200,7 +203,11 @@ class FreelogAlphaAside extends HTMLElement {
       event.stopPropagation()
     }
     this.sidebarVisible = !this.sidebarVisible
-    this.toggleClass(this.$app, 'hide-sidebar')
+    if (this.sidebarVisible) {
+      this.toggleClass(this.$app, 'hide-sidebar', 'delete')
+    } else {
+      this.toggleClass(this.$app, 'hide-sidebar', 'add')
+    }
     if(!this.sidebarVisible) {
       this.handlerAfterHideSidebar()
     }
@@ -210,7 +217,9 @@ class FreelogAlphaAside extends HTMLElement {
     this.expandBtnTimer = setTimeout(() => {
       this.expandBtnVisible = true
       this.toggleClass(this.$expandBtn, 'visible', 'add')
-      this.expandBtnTimer = setTimeout(this.hideExpanderBtn.bind(this), 2000)
+      if (!this.expandBtnVisibleAlway) {
+        this.expandBtnTimer = setTimeout(this.hideExpanderBtn.bind(this), 2000)
+      }
     }, 200)
   }
 
@@ -223,7 +232,7 @@ class FreelogAlphaAside extends HTMLElement {
   hideExpanderBtn() {
     clearTimeout(this.expandBtnTimer)
     this.expandBtnVisible = false
-    this.toggleClass(this.$expandBtn, 'visible', 'hide')
+    this.toggleClass(this.$expandBtn, 'visible', 'delete')
   }
 
   toggleClass ($dom, className, type){
@@ -278,7 +287,9 @@ class FreelogAlphaAside extends HTMLElement {
     if(clientX > 40) {
       if(this.expandBtnVisible) {
         this.expandBtnVisible = false
-        this.expandBtnTimer = setTimeout(this.hideExpanderBtn.bind(this), 2000)
+        if (!this.expandBtnVisibleAlway) {
+          this.expandBtnTimer = setTimeout(this.hideExpanderBtn.bind(this), 2000)
+        }
       }
     }else {
       if(!this.expandBtnVisible) {
