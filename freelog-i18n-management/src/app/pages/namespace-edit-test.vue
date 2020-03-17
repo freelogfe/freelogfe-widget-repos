@@ -3,8 +3,8 @@
     <div class="i-m-nem-head">
       <div class="module-select-box">
         <label for="module-select">模块名称：</label>
-        <el-select size="small" id="module-select" :value="selectedModuleName" @change="exchangeModule">
-          <!-- <el-option label="全部模块" :value="ALL_MODULES"></el-option> -->
+        <el-select size="small" id="module-select" :value="selectedModuleName" @change="exchangeModuleName">
+          <el-option :label="allModuleLabel" :value="ALL_MODULES"></el-option>
           <el-option v-for="item in reposModules" :key="item.name" :label="item.name" :value="item.name"></el-option>
         </el-select>
       </div>
@@ -19,7 +19,7 @@
         type="text" 
         suffix-icon="el-icon-search"
         placeholder="请输入内容进行Key筛选" 
-        v-model="searchInputStr" @keyup.enter.native="filterNamespaceListByInput">
+        v-model="searchInputStr" @keyup.enter.native="refreshSidebar">
       </el-input>
       <el-badge class="save-key-changes-btn" slot="reference" :value="changedKeys.length" :hidden="changedKeys.length === 0">
         <el-button type="primary" size="small" :disabled="changedKeys.length === 0" @click="saveChanges">
@@ -28,26 +28,25 @@
       </el-badge>
       <el-button class="add-new-namescpace-btn" type="danger" size="small" @click="showNewKeyDialog = true">新增Key</el-button>
     </div>
-    <div class="i-m-nem-sidebar" v-loading="isRefreshingSidebar" v-if="filteredNamespaceList.length">
-      <ul>
-        <li 
-          :class="{'active': item.key === selectedNamespace.key}"
-          v-for="(item, index) in filteredNamespaceList" 
-          :key="item.key + 'index'"
-          @click="handleSelectNamespace(index)">
-          <span class="change-badge" v-if="changedKeysMap[item.key]">{{badgeMap[changedKeysMap[item.key].operation]}}</span>
-          <span class="empty-value" v-if="item.isExistEmptyValue">空</span>
-          {{item.key}}
-        </li>
-      </ul>
-    </div>
-    <div class="i-m-nem-body" v-if="filteredNamespaceList.length">
+    <namespace-sidebar
+      :refresSidebarCount="refresSidebarCount"
+      :selectedModuleName="selectedModuleName"
+      :searchInputStr="searchInputStr"
+      :selectedState="selectedState"
+      :reposModules="reposModules"
+      :languages="languages"
+      :reposModulesMap="reposModulesMap"
+      :changedKeysMap="changedKeysMap"
+      :selectedKeyItem.sync="selectedKeyItem"
+      :getModuleI18nData="getModuleI18nData"
+      :checkLanguageValue="checkLanguageValue"></namespace-sidebar>
+    <div class="i-m-nem-body" v-if="selectedKeyItem != null">
       <div class="i-m-nem-breadcrumb-box">
-        <el-breadcrumb separator="/">
-          <el-breadcrumb-item v-for="(item, index) in selectedModule.keys" :key="'breadcrumb-'+index">{{item}}</el-breadcrumb-item>
+        <el-breadcrumb separator="/" v-if="selectedRepoModule != null">
+          <el-breadcrumb-item v-for="(item, index) in selectedRepoModule.keys" :key="'breadcrumb-'+index">{{item}}</el-breadcrumb-item>
         </el-breadcrumb>
-        <span class="i-m-nem-selected-key">{{selectedNamespace.key}}</span>
-        <clipboard :value="selectedNamespace.key">
+        <span class="i-m-nem-selected-key">{{selectedKeyItem.key}}</span>
+        <clipboard :value="selectedKeyItem.key">
           <el-button class="i-m-nem-key-copy" type="primary" size="mini" plain>copy</el-button>
         </clipboard>
       </div>
@@ -56,19 +55,29 @@
         :key="lang"
         :language="lang"
         :title="languagesMap[lang]"
-        :selectedNamespace="selectedNamespace"
+        :selectedKeyItem="selectedKeyItem"
         :checkLanguageValue="checkLanguageValue"
         @value-update="handleChanges"></namespace-card>
     </div>
-    <div class="i-m-nem-empty" v-if="filteredNamespaceList.length === 0">
+    <div class="i-m-nem-empty" v-else>
       暂无相关的Key...
     </div>
     <el-dialog class="i-m-nem-add-dialog" title="新增Key" width="480px" center :visible.sync="showNewKeyDialog">
+      <div class="module-select-box">
+        <label>Key所在模块：</label>
+        <el-select size="small" id="module-select" placeholder="请选择模块" v-model="newKeyOfModuleName">
+          <el-option v-for="item in reposModules" :key="item.name" :label="item.name" :value="item.name"></el-option>
+        </el-select>
+      </div>
       <el-input placeholder="输入key" v-model="newKey" @input="validateNewKey"></el-input>
       <p class="add-key-error">{{newKeyValidtedError}}</p>
+      
       <span slot="footer" class="dialog-footer">
         <el-button size="small" @click="showNewKeyDialog = false">取 消</el-button>
-        <el-button type="primary" size="small" :disabled="newKeyValidtedError != ''" @click="addNewKey">确 定</el-button>
+        <el-button type="primary" size="small" 
+          :disabled="newKeyValidtedError !== '' || newKeyOfModuleName == ''" 
+          @click="addNewKey">确 定
+        </el-button>
       </span>
     </el-dialog>
   </div>
@@ -78,11 +87,12 @@
 import objectPath from 'object-path'
 import NamespaceCard from '../components/namespace-card.vue'
 import Clipboard from '../components/clipboard.vue'
+import NamespaceSidebar from '../components/namespace-sidebar.vue'
+import { ALL_MODULES } from '../enum.js'
 
-const ALL_MODULES = '__ALL_MODULES__' + new Date().getTime()
 export default {
   name: 'namespace-edit-mode',
-  components: { NamespaceCard, Clipboard },
+  components: { NamespaceCard, Clipboard, NamespaceSidebar },
   props: {
     repository: Object,
     allModuleData: Object,
@@ -91,26 +101,23 @@ export default {
   data() {
     return {
       ALL_MODULES,
-      badgeMap: {
-        'update': '改',
-        'add': '增',
-        'delete': '删'
-      },
-      languages: [],
+      allModuleLabel: '全部模块',
       languagesMap: {
         'en': '英文', 
         'zh-CN': '中文',
       },
-      isRefreshingSidebar: true,
+      languages: [],
+      topedLanguage: 'zh-CN',
+      isRefreshingSidebar: false,
       searchInputStr: '',
-      selectedModule: null,
-      targetModuleI18nData: null,
-      targetNamespaceList: [],
+      selectedRepoModule: null,
       filteredNamespaceList: [],
-      selectedNamespace: null,
+      renderedKeysListMap: {},
+      selectedKeyItem: null,
       showNewKeyDialog: false,
       newModule: '',
       newKey: '',
+      newKeyOfModuleName: '',
       timer: null,
       newKeyValidtedError: '',
       changedKeys: [],
@@ -119,7 +126,8 @@ export default {
         { label: '已更新', value: 'update'}, 
         { label: '存在空值', value: 'empty'},
       ],
-      selectedState: 'all'
+      selectedState: 'all',
+      refresSidebarCount: 0,
     }
   },
   computed: {
@@ -143,129 +151,69 @@ export default {
       })
       return map
     },
-    isMultifileStructure() {
-      if (this.selectedModule !== null) {
-        if(this.selectedModule.children[0].children.length > 1) {
-          return true
-        }
-      }
-      return false
-    },
   },
   watch: {
-    targetNamespaceList() {
-      this.filterNamespaceListByInput()
-    },
     async selectedModuleName() {
       this.searchInputStr = ''
       this.changedKeys = []
-      this.selectedModule = this.reposModulesMap[this.selectedModuleName]
-      try {
-        this.isRefreshingSidebar = true
-        if (this.selectedModuleName === ALL_MODULES) {
-          this.targetModuleI18nData = objectPath.get(this.allModuleData, [ this.repositoryName ])
-        } else {
-          this.targetModuleI18nData = objectPath.get(this.allModuleData, [ this.repositoryName, this.selectedModuleName ])
-        }
-        this.isRefreshingSidebar = false
-        this.resolveI18nData([ this.selectedModuleName ])
-        this.handleSelectNamespace(0)
-      } catch(e) {
-        this.isRefreshingSidebar = false
-        this.targetModuleI18nData = null
-        this.targetNamespaceList = []
-        console.error(e)
-      }
-    }
+      this.refreshSidebar()
+    },
+    selectedKeyItem() {
+      if (this.selectedKeyItem == null) return
+      this.selectedRepoModule = this.reposModulesMap[this.selectedKeyItem.moduleName]
+    },
   },
   methods: {
     init() {
-      console.log('init ---')
       if (this.reposModules) {
-        this.exchangeModule(this.reposModules[0].name)
+        this.getLanguages()
+        this.setTopForLanguage(this.topedLanguage)
+        this.exchangeModuleName(this.ALL_MODULES)
       }
     },
-    fetchModuleI18nDataByModuleName(module) {
-      return window.FreelogApp.QI.fetch(`//i18n.testfreelog.com/v1/i18n/trackedRepository/data?targetPath=${encodeURIComponent(module.path)}&pathType=2&repositoryName=${this.repositoryName}`)
-        .then(res => res.json())
-        .then(res => {
-          if (res.errcode === 0) {
-            return objectPath.get(res.data, module.keys)
-          } else {
-            throw new Error(res.msg)
-          }
-        })
-        .catch(e => this.$error.showErrorMessage(e))
+    refreshSidebar() {
+      this.refresSidebarCount = this.refresSidebarCount + 1
     },
-    getModuleI18nDataByModuleName(name) {
-      return objectPath.get(this.allModuleData, [ this.repositoryName, moduleName ])
-    },
-    resolveI18nData(modules) {
-      let targetNamespaceList = []
-      for (const moduleName of modules) {
-        const moduleI18nData = objectPath.get(this.allModuleData, [ this.repositoryName, moduleName ])
-        // targetNamespaceList = this.getNamespaceListFromI18nData(moduleI18nData['zh-CN'])
+    getLanguages() {
+      if (this.reposModules == null) return []
+      var set = new Set()
+      for (const item of this.reposModules) {
+        for (const langItem of item.children) {
+          set.add(langItem.name)
+        }
       }
-      this.targetNamespaceList = this.getNamespaceListFromI18nData(this.targetModuleI18nData['zh-CN'])
-      this.languages = this.targetModuleI18nData != null ? Object.keys(this.targetModuleI18nData) : []
-      this.setTopForLanguage('zh-CN')
-      this.checkSpaceListByLang()
+      this.languages = [ ...set ]
     },
-    getNamespaceListFromI18nData(data) {
-      const list = []
-      if (data == null) return list
-      for(const [ key, value ] of Object.entries(data)) {
-        if (Array.isArray(value)) {
-          list.push({ key, value, valueType: 'array' })
-        } else if (typeof value === 'string') {
-          list.push({ key, value, valueType: 'string' })
-        } else {
-          const arr = this.getNamespaceListFromI18nData(value).map(item => {
-            item.key = `${key}.${item.key}`
-            return item
+    setTopForLanguage(lang) {
+      const index = this.languages.indexOf(lang)
+      if (index !== -1) {
+        this.languages.splice(index, 1)
+        this.languages.unshift(lang)
+      }
+    },
+    async exchangeModuleName(moduleName) {
+      if (this.changedKeys.length > 0) {
+        try {
+          const tmpModuleName = moduleName === this.ALL_MODULES ? this.allModuleLabel : moduleName
+          await this.$confirm(`当前操作将会清空模块${tmpModuleName}的${this.changedKeys.length}个key更改，是否继续？`, '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
           })
-          list.push(...arr)
+          this.$message({ type: 'success',  message: `已切换至名称为${tmpModuleName}的模块（或项目）!`})
+        } catch(e) {
+          this.$message({ type: 'info', message: '已取消切换模块（或项目）'}) 
+          return
         }
+      } 
+      this.$emit('update:selectedModuleName', moduleName)
+    },
+    getModuleI18nData(moduleName) {
+      if (this.allModuleData != null) {
+        return objectPath.get(this.allModuleData, [ this.repositoryName, moduleName ])
+      } else {
+        return null
       }
-      return list
-    },
-    checkSpaceListByLang() {
-      const tmpI18nData = this.targetModuleI18nData
-      const languages = this.languages.filter(lang => lang !== 'zh-CN')
-      this.targetNamespaceList.forEach(item => {
-        item['zh-CN'] = item.value
-        for (let i = 0; i < languages.length; i++) {
-          const lang = languages[i]
-          item[lang] = objectPath.get(tmpI18nData, `${lang}.${item.key}`)
-        }
-      })
-    },
-    filterNamespaceListByInput() {
-      const str = this.searchInputStr.replace(/^(\s*)|(\s*)$/g, '')
-      this.filteredNamespaceList = this.targetNamespaceList.map(item => {
-        return this.checkLanguageValue(item) 
-      }).filter(item => {
-        let isFilter = item.key.indexOf(str) !== -1
-        this.languages.forEach(lang => {
-          if (item[lang] != null) {
-            isFilter = isFilter || item[lang].indexOf(str) !== -1
-          }
-        })
-        switch(this.selectedState) {
-          case 'update': {
-            isFilter = isFilter && !!this.changedKeysMap[item.key]
-            break
-          }
-          case 'empty': {
-            isFilter = isFilter && item.isExistEmptyValue
-            break
-          }
-          case 'all': {}
-          default: {}
-        }
-        return isFilter
-      })
-      this.handleSelectNamespace(0)
     },
     checkLanguageValue(item) {
       let isExistEmptyValue = false
@@ -275,28 +223,9 @@ export default {
       item.isExistEmptyValue = isExistEmptyValue
       return item 
     },
-    async exchangeModule(moduleName) {
-      if (this.changedKeys.length > 0) {
-        try {
-          await this.$confirm(`当前操作将会清空模块${this.selectedModuleName}的${this.changedKeys.length}个key更改，是否继续？`, '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-          })
-          this.$message({ type: 'success',  message: `已切换至名称为${moduleName}的模块（或项目）!`})
-        } catch(e) {
-          this.$message({ type: 'info', message: '已取消切换模块（或项目）'}) 
-          return
-        }
-      } 
-      this.$emit('update:selectedModuleName', moduleName)
-    },
     exchangeState(state) {
       this.selectedState = state
-      this.filterNamespaceListByInput()
-    },
-    handleSelectNamespace(index) {
-      this.selectedNamespace = this.filteredNamespaceList[index]
+      this.refreshSidebar()
     },
     validateNewKey(key) {
       clearTimeout(this.timer)
@@ -312,16 +241,29 @@ export default {
           this.newKeyValidtedError = '命名格式有误; key由大小字母、数字和字符（_、-、.）组合而成'
           return 
         }
-        if (objectPath.get(this.targetModuleI18nData['zh-CN'], key) != null || this.changedKeysMap[key] != null){
+        if (this.isKeyExisted(key)){
           this.newKeyValidtedError = '命名冲突： 输入的key已存在！'
           return 
         } 
         this.newKeyValidtedError = ''
       }, 50)
     },
+    isKeyExisted(key) {
+      if (this.changedKeysMap[key] != null) return true
+      for (const _module of this.reposModules) {
+        const i18nData = this.getModuleI18nData(_module.name)
+        if (i18nData != null) {
+          if (objectPath.get(i18nData['zh-CN'], key) != null) {
+            return true
+          }
+        }
+      }
+      return false
+    },
     addNewKey() {
       if (this.newKeyValidtedError === '') {
         this.handleChanges({
+          moduleName: this.newKeyOfModuleName,
           operation: 'add',
           key: this.newKey, 
           valueType: 'string',
@@ -330,16 +272,15 @@ export default {
         })
         this.showNewKeyDialog = false
         this.newKey = ''
-        this.handleSelectNamespace(0)
       }
     },
     handleChanges(updateData) {
-      const { key, operation } = updateData
+      const { key, operation, moduleName } = updateData
       const changedKeys = this.changedKeys
       // 当前变更的key是否存在“已变更key的列表”，并获取它的序号
       let targetIndex = -1
       for (let i = 0; i < changedKeys.length; i++) {
-        if (changedKeys[i].key === key) {
+        if (changedKeys[i].key === key && changedKeys[i].moduleName === moduleName) {
           targetIndex = i
           break
         }
@@ -350,13 +291,9 @@ export default {
             changedKeys.splice(targetIndex, 1)
           }
           changedKeys.unshift(updateData)
-          for (let i = 0; i < this.targetNamespaceList.length; i++) {
-            const item = this.targetNamespaceList[i]
-            if (item.key === updateData.key) {
-              this.targetNamespaceList.splice(i, 1)
-              this.targetNamespaceList.unshift(item)
-              break
-            }
+          const i18nData = this.getModuleI18nData(moduleName)
+          for (const lang of this.languages) {
+            objectPath.set(i18nData, `${lang}.${key}`, updateData[lang])
           }
           break
         }
@@ -370,14 +307,20 @@ export default {
         case 'add': {
           if (targetIndex === -1) {
             changedKeys.unshift(updateData)
-            this.targetNamespaceList.unshift(updateData)
+            const i18nData = this.getModuleI18nData(moduleName)
+            for (const lang of this.languages) {
+              objectPath.set(i18nData, `${lang}.${key}`, '')
+            }
           }
           break
         }
       }
+      this.refreshSidebar()
     },
     async saveChanges() {
       const saveData = this.resolveSaveData()
+      // console.log('saveChanges --', JSON.parse(JSON.stringify(saveData)))
+      
       const res = await window.FreelogApp.QI.fetch('//i18n.testfreelog.com/v1/i18n/trackedRepository/data', {
         method: 'PUT',
         headers: {
@@ -403,47 +346,62 @@ export default {
     resolveSaveData() {
       const changedFiles = []
       const changedKeys = this.changedKeys
-      const modulePath = this.selectedModule.path
-      if (this.isMultifileStructure) {
-        this.languages.forEach(lang => {
-          const tmpI18nData = this.targetModuleI18nData[lang]
-          const fileNameSet = new Set()
-          for (let j = 0; j < changedKeys.length; j++) {
-            const tmpArr = changedKeys[j].key.split('.')
-            fileNameSet.add(tmpArr[0])
-            objectPath.set(tmpI18nData, changedKeys[j].key, changedKeys[j][lang])
+      const changedModulesSet = new Set()
+      const changedFilesSet = new Set()
+      
+      // 更新本地的i18nData
+      for (const keyItem of changedKeys) {
+        const { key, moduleName } = keyItem
+        const tmpI18nData = this.getModuleI18nData(moduleName)
+        const isMulti = this.isMultifileStructure(moduleName)
+        if (isMulti) {
+          const tmpArr = key.split('.')
+          changedFilesSet.add(tmpArr[0])
+        }
+        for (const lang of this.languages) {
+          objectPath.set(tmpI18nData[lang], key, keyItem[lang])
+        }
+        changedModulesSet.add(moduleName)
+      }
+
+      // 获取发生变更的文件（路径&内容）
+      for (const moduleName of changedModulesSet) {
+        const _module = this.reposModulesMap[moduleName]
+        const tmpI18nData = this.getModuleI18nData(moduleName)
+        const isMulti = this.isMultifileStructure(moduleName)
+        if (isMulti) {
+          for (const filename of changedFilesSet) {
+            for (const lang of this.languages) {
+              const data = objectPath.get(tmpI18nData, [ lang, filename ])
+              changedFiles.push({
+                targetJSONString: JSON.stringify(data, null, '\t'),
+                targetPath: [ _module.path, lang, `${filename}.json` ].join('/')
+              })
+            }
           }
-          for (const filename of fileNameSet) {
+        } else {
+          for (const lang of this.languages) {
             changedFiles.push({
-              targetJSONString: JSON.stringify(objectPath.get(tmpI18nData, filename), null, '\t'),
-              targetPath: [ modulePath, lang, `${filename}.json` ].join('/')
+              targetJSONString: JSON.stringify(tmpI18nData[lang], null, '\t'),
+              targetPath: [ _module.path, lang, 'index.json' ].join('/')
             })
           }
-        })
-      } else {
-        this.languages.forEach(lang => {
-          const tmpI18nData = this.targetModuleI18nData[lang]
-          for (let j = 0; j < changedKeys.length; j++) {
-            objectPath.set(tmpI18nData, changedKeys[j].key, changedKeys[j][lang])
-          }
-          changedFiles.push({
-            targetJSONString: JSON.stringify(tmpI18nData, null, '\t'),
-            targetPath: [ modulePath, lang, 'index.json' ].join('/')
-          })
-        })   
+        }
       }
       return {
         repositoryName: this.repositoryName,
         changedFiles
       }
     },
-    setTopForLanguage(lang) {
-      const index = this.languages.indexOf(lang)
-      if (index !== -1) {
-        this.languages.splice(index, 1)
-        this.languages.unshift(lang)
+    isMultifileStructure(moduleName) {
+      const _module = this.reposModulesMap[moduleName]
+      if (_module !== null) {
+        if(_module.children[0].children.length > 1) {
+          return true
+        }
       }
-    }
+      return false
+    },
   },
   mounted() {
     this.init()
@@ -461,7 +419,7 @@ export default {
   ul { box-sizing: border-box; height: 100%; padding: 5px 0; overflow: auto; }
   li { 
     margin: 3px 0; padding: 3px 10px;
-    word-break: break-word; font-size: 14px; cursor: pointer;
+    word-break: break-all; font-size: 14px; cursor: pointer;
     &:hover, &.active {
       background-color: #409EFF; color: #fff;
     }
@@ -523,6 +481,16 @@ export default {
 .i-m-nem-empty {
   display: flex; justify-content: center; align-items: center;
   height: 70%;
+}
+
+.i-m-nem-add-dialog {
+  .module-select-box {
+    margin-bottom: 20px; text-align: center;
+  }
+  .key-input-box {
+    display: flex;
+    .el-input { width: 300px; }
+  }
 }
 </style>
 

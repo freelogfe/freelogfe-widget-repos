@@ -61,8 +61,8 @@
 
 <script>
 import FileEditView from './file-edit.vue'
-import NamespaceEditView from './namespace-edit.vue'
-import RepositoryPushBtn from './repository-push.vue'
+import NamespaceEditView from './namespace-edit-test.vue'
+import RepositoryPushBtn from '../components/repository-push.vue'
 import objectPath from 'object-path'
 const cacheJSONString = {}
 export default {

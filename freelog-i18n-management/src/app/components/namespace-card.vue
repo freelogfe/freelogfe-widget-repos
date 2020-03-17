@@ -5,7 +5,7 @@
       </div>
       <div>
         <el-input 
-          v-if="selectedNamespace.valueType === 'string'" 
+          v-if="selectedKeyItem.valueType === 'string'" 
           type="textarea" rows="4"
           v-model="value"
           @input="handleNamespaceInput"
@@ -31,7 +31,7 @@ export default {
   props: {
     language: String,
     title: String,
-    selectedNamespace: Object,
+    selectedKeyItem: Object,
     checkLanguageValue: Function,
   },
   data() {
@@ -40,22 +40,22 @@ export default {
     }
   },
   watch: {
-    selectedNamespace() {
-      this.value = this.selectedNamespace[this.language]
+    selectedKeyItem() {
+      this.value = this.selectedKeyItem[this.language]
     },
   },
   methods: {
     handleNamespaceInput(str) {
-      this.selectedNamespace[this.language] = str
+      this.selectedKeyItem[this.language] = str
     },
     handleNamespaceChange() {
-      this.checkLanguageValue(this.selectedNamespace)
-      const data = Object.assign({ operation: 'update' }, this.selectedNamespace)
+      this.checkLanguageValue(this.selectedKeyItem)
+      const data = Object.assign({ operation: 'update' }, this.selectedKeyItem)
       this.$emit('value-update', data)
     },
   },
   mounted() {
-    this.value = this.selectedNamespace[this.language]
+    this.value = this.selectedKeyItem[this.language]
   },
 }
 </script>

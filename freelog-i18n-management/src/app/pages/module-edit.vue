@@ -60,7 +60,7 @@
 </template>
 
 <script>
-import namespaceItem from './namespace-item.vue'
+import namespaceItem from '../components/namespace-item.vue'
 import objectPath from 'object-path'
 const cloneDeep = require('lodash/cloneDeep')
 
