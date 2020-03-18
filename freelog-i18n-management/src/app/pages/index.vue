@@ -5,7 +5,9 @@
       <div class="repos-select-box">
         <el-dropdown @command="selectRepository">
           <span class="el-dropdown-link">
-            <span>仓库名称：</span>{{selectedReposName}}<i class="el-icon-arrow-down el-icon--right"></i>
+            <span>仓库名称：</span>
+            <a :href="reposI18nBranchUrl" target="_blank">{{selectedReposName}}</a>
+            <i class="el-icon-arrow-down el-icon--right"></i>
           </span>
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item v-for="item in trackedRepositories" :key="item.repositoryName" :command="item.repositoryName">
@@ -61,7 +63,7 @@
 
 <script>
 import FileEditView from './file-edit.vue'
-import NamespaceEditView from './namespace-edit-test.vue'
+import NamespaceEditView from './namespace-edit-2.vue'
 import RepositoryPushBtn from '../components/repository-push.vue'
 import objectPath from 'object-path'
 const cacheJSONString = {}
@@ -114,6 +116,13 @@ export default {
         })
       }
       return map
+    },
+    reposI18nBranchUrl() {
+      if (this.selectedRepository != null) {
+        const { repositoryUrl, repositoryI18nBranch } = this.selectedRepository
+        return `${repositoryUrl}/tree/${repositoryI18nBranch}`
+      }
+      return this.selectedRepository != null ? this.selectedRepository.repositoryUrl : ''
     },
   },
   methods: {
@@ -241,6 +250,9 @@ export default {
       font-size: 18px; font-weight: 500; color: #606060; 
       .el-dropdown {
         font-size: 16px;
+        .el-dropdown-link {
+          a { text-decoration: underline; color: #606266; }
+        }
       }
     }
     .repos-btns-box { 
