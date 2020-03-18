@@ -17,6 +17,10 @@
     </div>
     <div class="imc-repos-commit-box">
       <p>Commit Message: <span style="color: #F56C6C;" v-if="commitMsg === ''">不能为空</span></p>
+      <div class="imc-commitMsg">
+        <el-tag size="mini" @click="addMsgForUpdateKey">Key更新</el-tag>
+        <el-tag size="mini" @click="addMsgForAddModule">新增模块</el-tag>
+      </div>
       <el-input type="textarea" :rows="2" v-model="commitMsg"></el-input>
     </div>
     <div class="imc-repos-changes-box">
@@ -33,6 +37,7 @@
 </template>
 
 <script>
+import { I18n_NOT_PUSH_MODULES, I18n_NOT_PUSH_KEYS } from '../enum.js'
 export default {
   name: 'i18n-management-repository-push',
   components: {},
@@ -75,6 +80,7 @@ export default {
         }).then(res => res.json())
         
         if (result.errcode === 0) {
+          this.clearNotPushInfo()
           this.showUpdatePopover = false
           this.$emit('update:repositoryChanges', [])
           this.$message.success('提交成功！')
@@ -111,6 +117,62 @@ export default {
           return result.data.access_token
         }
       }
+    },
+    addMsgForUpdateKey() {
+      let msg = ''
+      const tmp = localStorage.getItem(I18n_NOT_PUSH_KEYS)
+      if (tmp != null) {
+        try {
+          const arr = JSON.parse(tmp)
+          const tmpPhangedKeys = new Set()
+          for (const item of arr) {
+            const { changedKeys, repositoryName } = item
+            if (this.repositoryName === repositoryName) {
+              for (const key of changedKeys) {
+                tmpPhangedKeys.add(key)
+              }
+            }
+          }
+          if (tmpPhangedKeys.size > 3) {
+            msg = `：${[ ...tmpPhangedKeys ].slice(0, 3).join(', ')}等${tmpPhangedKeys.size}个Key`
+          } else {
+            msg = `：${[ ...tmpPhangedKeys ].join(', ')}`
+          }
+        } catch (e) {
+          console.error('addMsgForUpdateKey --', e)
+        }
+      }
+      msg = `Key更新${msg}\n`
+      const regE = new RegExp(msg, 'g')
+      this.commitMsg = this.commitMsg.replace(regE, '')
+      this.commitMsg = msg + this.commitMsg
+    },
+    addMsgForAddModule() {
+      let msg = ''
+      const tmp = localStorage.getItem(I18n_NOT_PUSH_MODULES) 
+      if (tmp != null) {
+        try {
+          const modules = JSON.parse(tmp)
+          const newModules = new Set()
+          for (const m of modules) {
+            const { repositoryName, moduleName } = m
+            if (this.repositoryName === repositoryName) {
+              newModules.add(moduleName)
+            }
+          }
+          msg = `：${[ ...newModules ].join(', ')}`
+        } catch (e) {
+          console.error('addMsgForAddModule --', addMsgForAddModule)
+        }
+      }
+      msg = `新增模块${msg};\n`
+      const regE = new RegExp(msg, 'g')
+      this.commitMsg = this.commitMsg.replace(regE, '')
+      this.commitMsg = msg + this.commitMsg
+    },
+    clearNotPushInfo() {
+      localStorage.setItem(I18n_NOT_PUSH_MODULES, '[]')
+      localStorage.setItem(I18n_NOT_PUSH_KEYS, '[]')
     }
   },
   async mounted() {
@@ -137,6 +199,10 @@ export default {
 .imc-github-user {
   margin-bottom: 10px;
   a { text-decoration: underline; }
+}
+.imc-commitMsg {
+  margin-bottom: 8px;
+  .el-tag { margin-right: 5px; cursor: pointer; }
 }
 .imc-repos-commit-box { 
   margin-bottom: 15px;

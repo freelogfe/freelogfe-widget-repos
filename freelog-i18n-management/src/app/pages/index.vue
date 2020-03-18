@@ -26,7 +26,7 @@
         </el-button>
       </el-button-group>
       <div class="repos-btns-box">
-        <el-button class="add-new-module-btn" type="danger" @click="showNewModuleDialog = true">新增模块</el-button>
+        <!-- <el-button class="add-new-module-btn" type="danger" @click="showNewModuleDialog = true">新增模块</el-button> -->
         <repository-push-btn
           :repositoryName="selectedReposName"
           :repositoryChanges.sync="selectedReposChanges"></repository-push-btn>
@@ -47,6 +47,7 @@
           :repository="selectedRepository"
           :allModuleData="allModuleData"
           :selectedModuleName.sync="selectedModuleName"
+          @add-new-module="showNewModuleDialog = true"
           @update-repository-changes="updateRepositoryChanges"
           @update-cache-JSONString="updateCacheJSONString"></namespace-edit-view> 
     </div>
@@ -62,10 +63,11 @@
 </template>
 
 <script>
+import objectPath from 'object-path'
+import { I18n_NOT_PUSH_MODULES } from '../enum.js'
 import FileEditView from './file-edit.vue'
 import NamespaceEditView from './namespace-edit-2.vue'
 import RepositoryPushBtn from '../components/repository-push.vue'
-import objectPath from 'object-path'
 const cacheJSONString = {}
 export default {
   name: 'i18n-manament-home',
@@ -215,9 +217,19 @@ export default {
         if (res.errcode === 0) {
           this.showNewModuleDialog = false
           this.resolveTrackedRepositories(res.data)
+          this.saveNewModuleRecord(moduleName, repositoryName)
+          await this.fetchAllModuleData()
           this.selectedModuleName = moduleName
         }
       }
+    },
+    saveNewModuleRecord(moduleName, repositoryName) {
+      let notPushModules = localStorage.getItem(I18n_NOT_PUSH_MODULES) || '[]'
+      notPushModules = JSON.parse(notPushModules)
+      notPushModules.push({
+        moduleName, repositoryName
+      })
+      localStorage.setItem(I18n_NOT_PUSH_MODULES, JSON.stringify(notPushModules))
     },
   },
   async mounted() {

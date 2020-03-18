@@ -26,6 +26,7 @@
           保存<span>（共{{changedKeys.length}}个Key更改）</span>  
         </el-button>
       </el-badge>
+      <el-button class="add-new-module-btn" type="danger" size="small" @click="addNewModule">新增模块</el-button>
       <el-button class="add-new-namescpace-btn" type="danger" size="small" @click="showNewKeyDialog = true">新增Key</el-button>
     </div>
     <namespace-sidebar
@@ -88,7 +89,7 @@ import objectPath from 'object-path'
 import NamespaceCard from '../components/namespace-card.vue'
 import Clipboard from '../components/clipboard.vue'
 import NamespaceSidebar from '../components/namespace-sidebar.vue'
-import { ALL_MODULES } from '../enum.js'
+import { ALL_MODULES, I18n_NOT_PUSH_KEYS } from '../enum.js'
 
 export default {
   name: 'namespace-edit-mode',
@@ -274,6 +275,9 @@ export default {
         this.newKey = ''
       }
     },
+    addNewModule() {
+      this.$emit('add-new-module')
+    },
     handleChanges(updateData) {
       const { key, operation, moduleName } = updateData
       const changedKeys = this.changedKeys
@@ -330,6 +334,7 @@ export default {
       }).then(res => res.json())
       if (res.errcode === 0) {
         this.$message.success(`保存成功！`)
+        this.saveChangedKeysRecord(this.repositoryName, this.changedKeys)
         this.changedKeys = []
         this.$emit('update-repository-changes', res.data)
         saveData.changedFiles.forEach(change => {
@@ -402,6 +407,16 @@ export default {
       }
       return false
     },
+    saveChangedKeysRecord(repositoryName, changedKeys) {
+      let notPushKeys = localStorage.getItem(I18n_NOT_PUSH_KEYS) || '[]'
+      notPushKeys = JSON.parse(notPushKeys)
+    
+      notPushKeys.push({
+        changedKeys: changedKeys.map(item => item.key), 
+        repositoryName
+      })
+      localStorage.setItem(I18n_NOT_PUSH_KEYS, JSON.stringify(notPushKeys))
+    },
   },
   mounted() {
     this.init()
@@ -456,7 +471,8 @@ export default {
     label { position: absolute; line-height: 40px; }
     .el-input { box-sizing: border-box; padding-left: 57px; }
   }
-  .add-new-namescpace-btn, .save-key-changes-btn {
+  // .add-new-namescpace-btn, .add-new-module-btn, 
+  .save-key-changes-btn {
     float: right; margin-left: 15px;
   }
 }

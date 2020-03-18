@@ -1,5 +1,5 @@
 <template>
-    <div class="i-m-nem-sidebar">
+    <div class="i-m-nem-sidebar" v-if="renderedKeysMap.size !== 0">
       <div v-if="selectedModuleName === nameOfAllModule">
         <el-collapse v-model="activeNames">
           <el-collapse-item v-for="_module of reposModules" :key="_module.name" :title="_module.name" :name="_module.name">
@@ -74,7 +74,6 @@ export default {
   },
   watch: {
     refresSidebarCount() {
-      console.log(this.refresSidebarCount)
       this.refreshKeysList()
       this.refreshSelectedKeyItem()
       this.activeNames = this.reposModules.map(item => item.name)
@@ -124,7 +123,7 @@ export default {
       return list
     },
     refreshKeysList() {
-      console.log('refreshKeysList --')
+      console.log('[refreshKeysList]')
       let list 
       if (this.selectedModuleName === ALL_MODULES) {
         this.refreshRenderedKeysListMap(this.reposModules.map(item => item.name))
@@ -172,7 +171,6 @@ export default {
       return keysList
     },
     filterKeysList(moduleI18nKyesList) {
-      console.log('rearrangeKeysList --', this.searchInputStr, this.selectedState)
       const str = this.searchInputStr.replace(/^(\s*)|(\s*)$/g, '').toLowerCase()
       return moduleI18nKyesList.map(item => {
         return this.checkLanguageValue(item) 
