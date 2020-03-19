@@ -26,8 +26,8 @@
           保存<span>（共{{changedKeys.length}}个Key更改）</span>  
         </el-button>
       </el-badge>
-      <el-button class="add-new-module-btn" type="danger" size="small" @click="addNewModule">新增模块</el-button>
-      <el-button class="add-new-namescpace-btn" type="danger" size="small" @click="showNewKeyDialog = true">新增Key</el-button>
+      <el-button class="add-new-namescpace-btn" type="danger" size="small" @click="showNewKeyDialog">新增Key</el-button>
+      <el-button class="add-new-module-btn" type="danger" size="small" @click="newModuleDialogVisible = true">新增模块</el-button>
     </div>
     <namespace-sidebar
       :refresSidebarCount="refresSidebarCount"
@@ -61,11 +61,18 @@
         @value-update="handleChanges"></namespace-card>
     </div>
     <div class="i-m-nem-empty" v-else>
-      暂无相关的Key...
+      <div class="empty-module-box" v-if="selectedModuleName !== ALL_MODULES && selectedModuleIsEmpty === true">
+        <el-button class="add-del-module-btn" type="danger" size="small" @click="delEmptyModule">删除{{selectedModuleName}}模块</el-button>
+        <p>当前模块为空（没有任何Key）</p>
+      </div>
+      <div v-else>暂无符合的Keys...</div>
     </div>
-    <el-dialog class="i-m-nem-add-dialog" title="新增Key" width="480px" center :visible.sync="showNewKeyDialog">
+
+    <el-dialog class="i-m-nem-add-dialog" title="新增Key" width="480px" center 
+      :close-on-click-modal="false" 
+      :visible.sync="newKeyDialogVisible">
       <div class="module-select-box">
-        <label>Key所在模块：</label>
+        <label>Key的所属模块：</label>
         <el-select size="small" id="module-select" placeholder="请选择模块" v-model="newKeyOfModuleName">
           <el-option v-for="item in reposModules" :key="item.name" :label="item.name" :value="item.name"></el-option>
         </el-select>
@@ -74,11 +81,23 @@
       <p class="add-key-error">{{newKeyValidtedError}}</p>
       
       <span slot="footer" class="dialog-footer">
-        <el-button size="small" @click="showNewKeyDialog = false">取 消</el-button>
+        <el-button size="small" @click="newKeyDialogVisible = false">取 消</el-button>
         <el-button type="primary" size="small" 
           :disabled="newKeyValidtedError !== '' || newKeyOfModuleName == ''" 
           @click="addNewKey">确 定
         </el-button>
+      </span>
+    </el-dialog>
+
+    <el-dialog class="i-m-nem-add-dialog" title="新增模块" width="480px" center
+      :close-on-click-modal="false" 
+      :visible.sync="newModuleDialogVisible">
+      
+      <el-input placeholder="输入模块名称" v-model="newModule" @input="validateNewModule"></el-input>
+      <p class="add-key-error">{{newModuleValidtedError}}</p>
+      <span slot="footer" class="dialog-footer">
+        <el-button size="small" @click="newModuleDialogVisible = false">取 消</el-button>
+        <el-button type="primary" size="small" :disabled="newModuleValidtedError != ''" @click="addNewModule">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -89,15 +108,15 @@ import objectPath from 'object-path'
 import NamespaceCard from '../components/namespace-card.vue'
 import Clipboard from '../components/clipboard.vue'
 import NamespaceSidebar from '../components/namespace-sidebar.vue'
-import { ALL_MODULES, I18n_NOT_PUSH_KEYS } from '../enum.js'
+import { ALL_MODULES, I18n_NOT_PUSH_KEYS, I18n_NOT_PUSH_MODULES } from '../enum.js'
 
 export default {
   name: 'namespace-edit-mode',
   components: { NamespaceCard, Clipboard, NamespaceSidebar },
   props: {
+    languages: Array,
     repository: Object,
     allModuleData: Object,
-    selectedModuleName: String,
   },
   data() {
     return {
@@ -107,20 +126,24 @@ export default {
         'en': '英文', 
         'zh-CN': '中文',
       },
-      languages: [],
       topedLanguage: 'zh-CN',
       isRefreshingSidebar: false,
       searchInputStr: '',
       selectedRepoModule: null,
+      selectedModuleName: '',
       filteredNamespaceList: [],
       renderedKeysListMap: {},
       selectedKeyItem: null,
-      showNewKeyDialog: false,
-      newModule: '',
+      newKeyDialogVisible: false,
       newKey: '',
       newKeyOfModuleName: '',
       timer: null,
       newKeyValidtedError: '',
+
+      newModuleDialogVisible: false,
+      newModule: '',
+      newModuleValidtedError: '',
+
       changedKeys: [],
       keyStates: [ 
         { label: '全部', value: 'all'}, 
@@ -129,6 +152,7 @@ export default {
       ],
       selectedState: 'all',
       refresSidebarCount: 0,
+      selectedModuleIsEmpty: false,
     }
   },
   computed: {
@@ -156,8 +180,9 @@ export default {
   watch: {
     async selectedModuleName() {
       this.searchInputStr = ''
-      this.changedKeys = []
+      // this.changedKeys = []
       this.refreshSidebar()
+      this.checkModuleIsEmpty()
     },
     selectedKeyItem() {
       if (this.selectedKeyItem == null) return
@@ -167,7 +192,6 @@ export default {
   methods: {
     init() {
       if (this.reposModules) {
-        this.getLanguages()
         this.setTopForLanguage(this.topedLanguage)
         this.exchangeModuleName(this.ALL_MODULES)
       }
@@ -175,15 +199,15 @@ export default {
     refreshSidebar() {
       this.refresSidebarCount = this.refresSidebarCount + 1
     },
-    getLanguages() {
-      if (this.reposModules == null) return []
-      var set = new Set()
-      for (const item of this.reposModules) {
-        for (const langItem of item.children) {
-          set.add(langItem.name)
-        }
+    checkModuleIsEmpty() {
+      if (this.selectedModuleName === ALL_MODULES) {
+        this.selectedModuleIsEmpty = false
+      } else {
+        const moduleData = this.getModuleI18nData(this.selectedModuleName)
+        const tmpData = Object.values(moduleData)
+        const dataKays = Object.keys(tmpData[0] || {})
+        this.selectedModuleIsEmpty = dataKays.length === 0
       }
-      this.languages = [ ...set ]
     },
     setTopForLanguage(lang) {
       const index = this.languages.indexOf(lang)
@@ -193,21 +217,21 @@ export default {
       }
     },
     async exchangeModuleName(moduleName) {
-      if (this.changedKeys.length > 0) {
-        try {
-          const tmpModuleName = moduleName === this.ALL_MODULES ? this.allModuleLabel : moduleName
-          await this.$confirm(`当前操作将会清空模块${tmpModuleName}的${this.changedKeys.length}个key更改，是否继续？`, '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-          })
-          this.$message({ type: 'success',  message: `已切换至名称为${tmpModuleName}的模块（或项目）!`})
-        } catch(e) {
-          this.$message({ type: 'info', message: '已取消切换模块（或项目）'}) 
-          return
-        }
-      } 
-      this.$emit('update:selectedModuleName', moduleName)
+      // if (this.changedKeys.length > 0) {
+      //   try {
+      //     const tmpModuleName = moduleName === this.ALL_MODULES ? this.allModuleLabel : moduleName
+      //     await this.$confirm(`当前操作将会清空模块${tmpModuleName}的${this.changedKeys.length}个key更改，是否继续？`, '提示', {
+      //       confirmButtonText: '确定',
+      //       cancelButtonText: '取消',
+      //       type: 'warning'
+      //     })
+      //     this.$message({ type: 'success',  message: `已切换至名称为${tmpModuleName}的模块（或项目）!`})
+      //   } catch(e) {
+      //     this.$message({ type: 'info', message: '已取消切换模块（或项目）'}) 
+      //     return
+      //   }
+      // } 
+      this.selectedModuleName = moduleName
     },
     getModuleI18nData(moduleName) {
       if (this.allModuleData != null) {
@@ -227,6 +251,14 @@ export default {
     exchangeState(state) {
       this.selectedState = state
       this.refreshSidebar()
+    },
+    showNewKeyDialog() {
+      this.newKeyDialogVisible = true
+      if (this.selectedModuleName === ALL_MODULES) {
+        this.newKeyOfModuleName = ''
+      } else {
+        this.newKeyOfModuleName = this.selectedModuleName
+      }
     },
     validateNewKey(key) {
       clearTimeout(this.timer)
@@ -271,12 +303,95 @@ export default {
           'en': '', 
           'zh-CN': '',
         })
-        this.showNewKeyDialog = false
+        this.newKeyDialogVisible = false
         this.newKey = ''
+        this.checkModuleIsEmpty()
       }
     },
-    addNewModule() {
-      this.$emit('add-new-module')
+    validateNewModule(name) {
+      clearTimeout(this.timer)
+      this.timer = setTimeout(() => {
+        let error = ''
+        name = name.replace(/^(\s*)|(\s*)$/g, '')
+        if (name === '') {
+          this.newModuleValidtedError = '模块名称不能为空'
+          return 
+        }
+        const isValid = /^[-\w]+$/.test(name)
+        if (!isValid) {
+          this.newModuleValidtedError = '模块名称有误；由大小字母和字符（-）组合而成'
+          return 
+        }
+        if (objectPath.get(this.allModuleData, [ this.selectedReposName, name ]) != null){
+          this.newModuleValidtedError = '模块名称冲突： 输入的模块名称已存在！'
+          return 
+        } 
+        this.newModuleValidtedError = ''
+      }, 50)
+    },
+    async addNewModule() {
+      const moduleName = this.newModule.replace(/^(\s*)|(\s*)$/g, '')
+      if (moduleName !== '') {
+        const repositoryName = this.repositoryName
+        const res = await window.FreelogApp.QI.fetch('//i18n.testfreelog.com/v1/i18n/trackedRepository/newModule', {
+          method: 'POST',
+          body: { 
+            moduleName, repositoryName,
+            languages: [ 'zh-CN', 'en' ] 
+          }
+        }).then(res => res.json())
+        if (res.errcode === 0) {
+          this.$emit('add-module-success', moduleName, res.data)
+          this.selectedModuleName = moduleName
+          this.saveModuleHandlerRecord(moduleName, repositoryName, 'add')
+          this.$message.success(`模块 ${moduleName} 创建成功！`)
+        } else {
+          this.$message.error(res.msg)
+        }
+        this.newModuleDialogVisible = false
+      }
+    },
+    async delEmptyModule() {
+      try {
+        const moduleName = this.selectedModuleName
+        await this.$confirm(`当前操作将会删除模块${moduleName}，是否继续？`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        })
+        const repositoryName = this.repositoryName
+        const res = await window.FreelogApp.QI.fetch('//i18n.testfreelog.com/v1/i18n/trackedRepository/module', {
+          method: 'DELETE',
+          body: { 
+            moduleName, repositoryName,
+          }
+        }).then(res => res.json())
+        if (res.errcode === 0) {
+          this.$emit('del-module-success', moduleName,res.data)
+          this.saveModuleHandlerRecord(moduleName, repositoryName, 'delete')
+          this.exchangeModuleName(this.ALL_MODULES)
+          this.$message.success(`模块 ${moduleName} 删除成功！`)
+        } else {
+          this.$message.error(res.msg)
+        }
+      } catch(e) {
+        console.error(e)
+        return
+      }
+    },
+    saveModuleHandlerRecord(moduleName, repositoryName, type) {
+      let notPushModules = localStorage.getItem(I18n_NOT_PUSH_MODULES) || '[]'
+      notPushModules = JSON.parse(notPushModules)
+      if (type === 'add') {
+        notPushModules.push({
+          moduleName, repositoryName
+        })
+      } else {
+        notPushModules = notPushModules.filter(item => {
+          return item.repositoryName !== repositoryName || item.moduleName !== moduleName
+        })
+      }
+      localStorage.setItem(I18n_NOT_PUSH_MODULES, JSON.stringify(notPushModules))
     },
     handleChanges(updateData) {
       const { key, operation, moduleName } = updateData
@@ -316,10 +431,10 @@ export default {
               objectPath.set(i18nData, `${lang}.${key}`, '')
             }
           }
+          this.refreshSidebar()
           break
         }
       }
-      this.refreshSidebar()
     },
     async saveChanges() {
       const saveData = this.resolveSaveData()
@@ -471,7 +586,7 @@ export default {
     label { position: absolute; line-height: 40px; }
     .el-input { box-sizing: border-box; padding-left: 57px; }
   }
-  // .add-new-namescpace-btn, .add-new-module-btn, 
+  .add-new-namescpace-btn, .add-new-module-btn, 
   .save-key-changes-btn {
     float: right; margin-left: 15px;
   }
@@ -497,6 +612,10 @@ export default {
 .i-m-nem-empty {
   display: flex; justify-content: center; align-items: center;
   height: 70%;
+  .empty-module-box {
+    text-align: center;
+    p { margin-top: 10px; }
+  }
 }
 
 .i-m-nem-add-dialog {

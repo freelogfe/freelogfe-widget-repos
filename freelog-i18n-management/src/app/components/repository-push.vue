@@ -18,8 +18,8 @@
     <div class="imc-repos-commit-box">
       <p>Commit Message: <span style="color: #F56C6C;" v-if="commitMsg === ''">不能为空</span></p>
       <div class="imc-commitMsg">
-        <el-tag size="mini" @click="addMsgForUpdateKey">Key更新</el-tag>
-        <el-tag size="mini" @click="addMsgForAddModule">新增模块</el-tag>
+        <el-tag size="mini" @click="addMsgForUpdateKey">文案更新</el-tag>
+        <el-tag size="mini" @click="addMsgForAddModule">模块更新</el-tag>
       </div>
       <el-input type="textarea" :rows="2" v-model="commitMsg"></el-input>
     </div>
@@ -66,7 +66,6 @@ export default {
       const changes = this.repositoryChanges
       if (changes.length === 0) return
       if (this.commitMsg === '') return 
-      console.log(this.commitMsg, changes)
       try {
         this.isPushing = true
         const accessToken = localStorage.getItem('github_access_toekn')
@@ -89,7 +88,7 @@ export default {
         }
       } catch(e) {
         this.$message.error(e.toString())
-        console.log('commitAndPushChanges - e', e)
+        console.err('commitAndPushChanges - e', e)
       } finally {
         this.isPushing = false
       }  

@@ -84,17 +84,24 @@ export default {
       this.$emit('update:selectedKeyItem', item)
     },
     refreshSelectedKeyItem() {
-      if (this.renderedKeysMap.get(this.getUniqueKey(this.selectedKeyItem)) === 1) return 
       let list
       if (this.selectedModuleName !== this.nameOfAllModule) {
         this.selectedModuleKeysList = this.renderedKeysListMap[this.selectedModuleName]
         list = this.selectedModuleKeysList
       } else {
-        const firstModule = this.reposModules[0]
-        list = this.renderedKeysListMap[firstModule.name]
+        for (const _module of this.reposModules) {
+          const tmpList = this.renderedKeysListMap[_module.name]
+          if (tmpList.length > 0) {
+            list = tmpList
+            break
+          }
+        }
       }
-      if (list != null) {
+      if (this.renderedKeysMap.get(this.getUniqueKey(this.selectedKeyItem)) === 1) return 
+      if (list != null && list.length) {
         this.handleSelectKey(list[0])
+      } else {
+        this.handleSelectKey(null)
       }
     },
     getModuleI18nKeysList(moduleName, moduleI18nData) {

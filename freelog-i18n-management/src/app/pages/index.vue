@@ -6,7 +6,8 @@
         <el-dropdown @command="selectRepository">
           <span class="el-dropdown-link">
             <span>仓库名称：</span>
-            <a :href="reposI18nBranchUrl" target="_blank">{{selectedReposName}}</a>
+            <!-- <a :href="reposCommitsUrl" target="_blank">{{selectedReposName}}</a> -->
+            {{selectedReposName}}
             <i class="el-icon-arrow-down el-icon--right"></i>
           </span>
           <el-dropdown-menu slot="dropdown">
@@ -26,45 +27,41 @@
         </el-button>
       </el-button-group>
       <div class="repos-btns-box">
-        <!-- <el-button class="add-new-module-btn" type="danger" @click="showNewModuleDialog = true">新增模块</el-button> -->
         <repository-push-btn
           :repositoryName="selectedReposName"
           :repositoryChanges.sync="selectedReposChanges"></repository-push-btn>
+          <el-tooltip class="repos-commits" content="查看提交记录" >
+            <a :href="reposCommitsUrl" target="_blank">
+              <el-button icon="el-icon-time" circle></el-button>
+            </a>
+          </el-tooltip>
       </div>
       <!-- <el-button type="primary" v-if="showGithubOAuthBtn">
         <a :href="githubOAuthUrl">GitHub oAuth</a>
       </el-button> -->
     </div>
     <div class="i-m-main-content" v-if="selectedRepository != null && allModuleData != null">
-        <file-edit-view
-          v-show="targetComponentId === modes[0].id"
-          :repository="selectedRepository"
-          :fetchJSONFileContent="fetchJSONFileContent"
-          @update-repository-changes="updateRepositoryChanges"
-          @update-cache-JSONString="updateCacheJSONString"></file-edit-view>
-        <namespace-edit-view
+      <file-edit-view
+        v-show="targetComponentId === modes[0].id"
+        :repository="selectedRepository"
+        :fetchJSONFileContent="fetchJSONFileContent"
+        @update-repository-changes="updateRepositoryChanges"
+        @update-cache-JSONString="updateCacheJSONString"></file-edit-view>
+      <namespace-edit-view
           v-show="targetComponentId === modes[1].id"
           :repository="selectedRepository"
           :allModuleData="allModuleData"
-          :selectedModuleName.sync="selectedModuleName"
-          @add-new-module="showNewModuleDialog = true"
+          :languages="languages"
+          @add-module-success="addModuleSuccess"
+          @del-module-success="delModuleSuccess"
           @update-repository-changes="updateRepositoryChanges"
           @update-cache-JSONString="updateCacheJSONString"></namespace-edit-view> 
     </div>
-    <el-dialog class="i-m-nem-add-dialog" title="新增模块" width="480px" center :visible.sync="showNewModuleDialog">
-      <el-input placeholder="输入模块名称" v-model="newModule" @input="validateNewModule"></el-input>
-      <p class="add-key-error">{{newModuleValidtedError}}</p>
-      <span slot="footer" class="dialog-footer">
-        <el-button size="small" @click="showNewModuleDialog = false">取 消</el-button>
-        <el-button type="primary" size="small" :disabled="newModuleValidtedError != ''" @click="addNewModule">确 定</el-button>
-      </span>
-    </el-dialog>
   </div>
 </template>
 
 <script>
 import objectPath from 'object-path'
-import { I18n_NOT_PUSH_MODULES } from '../enum.js'
 import FileEditView from './file-edit.vue'
 import NamespaceEditView from './namespace-edit-2.vue'
 import RepositoryPushBtn from '../components/repository-push.vue'
@@ -79,10 +76,10 @@ export default {
         { id: 'FileEditView', mode: 'file-edit', label: '文件编辑模式', icon: 'el-icon-files' }, 
         { id: 'NamespaceEditView', mode: 'namespace-edit', label: 'Key编辑模式', icon: 'el-icon-edit-outline' }
       ],
+      languages: [],
       trackedRepositories: [],
       selectedRepository: null, 
       selectedReposName: '',
-      selectedModuleName: '',
       allModuleData: null,
       selectedReposChanges: [],
       showUpdatePopover: false,
@@ -91,10 +88,6 @@ export default {
       isPushing: false,
       showGithubOAuthBtn: false,
       githubUser: null,
-      showNewModuleDialog: false,
-      newModule: '',
-      newModuleValidtedError: '',
-      timer: null,
     }
   },
   computed: {
@@ -110,24 +103,18 @@ export default {
     githubOAuthUrl() {
       return `https://github.com/login/oauth/authorize?client_id=874c97335a3e4df726af&redirect_uri=${encodeURIComponent(window.location.href)}`
     },
-    reposModulesMap() {
-      const map = {}
-      if (this.selectedRepository != null) {
-        this.selectedRepository.directoryTree.forEach(item => {
-          map[item.name] = item
-        })
-      }
-      return map
-    },
-    reposI18nBranchUrl() {
+    reposCommitsUrl() {
       if (this.selectedRepository != null) {
         const { repositoryUrl, repositoryI18nBranch } = this.selectedRepository
-        return `${repositoryUrl}/tree/${repositoryI18nBranch}`
+        return `${repositoryUrl}/commits/${repositoryI18nBranch}`
       }
       return this.selectedRepository != null ? this.selectedRepository.repositoryUrl : ''
     },
   },
   methods: {
+    async init() {
+      await this.fetchTrackedRepositories()
+    },
     async fetchTrackedRepositories() {
       const res = await window.FreelogApp.QI.fetch('//i18n.testfreelog.com/v1/i18n/trackedRepositories/list').then(res => res.json())
       if(res.errcode === 0 && res.data.length) {
@@ -140,6 +127,7 @@ export default {
       this.selectedRepository = this.trackedRepositories[0]
       this.selectedReposName = this.selectedRepository.repositoryName
       this.selectedReposChanges = this.selectedRepository.repositoryChanges
+        this.getLanguages()
     },
     async fetchAllModuleData() {
       return window.FreelogApp.QI.fetch(`//i18n.testfreelog.com/v1/i18n/trackedRepository/data?pathType=0&repositoryName=${this.selectedReposName}`)
@@ -152,6 +140,16 @@ export default {
           }
         })
         .catch(e => this.$error.showErrorMessage(e))
+    },
+    getLanguages() {
+      if (this.selectedRepository == null) return []
+      var set = new Set()
+      for (const item of this.selectedRepository.directoryTree) {
+        for (const langItem of item.children) {
+          set.add(langItem.name)
+        }
+      }
+      this.languages = [ ...set ]
     },
     async fetchJSONFileContent(path, keys) {
       if (cacheJSONString[path]) {
@@ -182,58 +180,19 @@ export default {
       const { path, value } = data
       cacheJSONString[path] = value
     },
-    validateNewModule(key) {
-      clearTimeout(this.timer)
-      this.timer = setTimeout(() => {
-        let error = ''
-        key = key.replace(/^(\s*)|(\s*)$/g, '')
-        if (key === '') {
-          this.newModuleValidtedError = '模块名称不能为空'
-          return 
-        }
-        const isValid = /^[-\w]+$/.test(key)
-        if (!isValid) {
-          this.newModuleValidtedError = '模块名称有误；由大小字母和字符（-）组合而成'
-          return 
-        }
-        if (this.reposModulesMap[key] != null){
-          this.newModuleValidtedError = '模块名称冲突： 输入的模块名称已存在！'
-          return 
-        } 
-        this.newModuleValidtedError = ''
-      }, 50)
-    },
-    async addNewModule() {
-      const moduleName = this.newModule.replace(/^(\s*)|(\s*)$/g, '')
-      if (moduleName !== '') {
-        const repositoryName = this.selectedReposName
-        const res = await window.FreelogApp.QI.fetch('//i18n.testfreelog.com/v1/i18n/trackedRepository/newModule', {
-          method: 'POST',
-          body: { 
-            moduleName, repositoryName,
-            languages: [ 'zh-CN', 'en' ] 
-          }
-        }).then(res => res.json())
-        if (res.errcode === 0) {
-          this.showNewModuleDialog = false
-          this.resolveTrackedRepositories(res.data)
-          this.saveNewModuleRecord(moduleName, repositoryName)
-          await this.fetchAllModuleData()
-          this.selectedModuleName = moduleName
-        }
+    addModuleSuccess(moduleName, data) {
+      this.resolveTrackedRepositories(data)
+      for (const language of this.languages) {
+        objectPath.set(this.allModuleData, [ this.selectedReposName, moduleName, language ], {})
       }
     },
-    saveNewModuleRecord(moduleName, repositoryName) {
-      let notPushModules = localStorage.getItem(I18n_NOT_PUSH_MODULES) || '[]'
-      notPushModules = JSON.parse(notPushModules)
-      notPushModules.push({
-        moduleName, repositoryName
-      })
-      localStorage.setItem(I18n_NOT_PUSH_MODULES, JSON.stringify(notPushModules))
-    },
+    delModuleSuccess(moduleName, data) {
+      this.resolveTrackedRepositories(data)
+      objectPath.del(this.allModuleData, [ this.selectedReposName, moduleName ])
+    }
   },
-  async mounted() {
-    this.fetchTrackedRepositories()
+  mounted() {
+    this.init()
   },
 }
 </script>
@@ -269,10 +228,16 @@ export default {
     }
     .repos-btns-box { 
       flex: 1; text-align: right; 
-      .add-new-module-btn {
-        margin-right: 14px;
+      .repos-commits {
+        margin-left: 10px; 
+        .el-button {
+          transform: translateY(2px);
+          padding: 9px;
+          font-size: 20px;
+        }
       }
     }
+
   }
   .i-m-main-content { 
     position: relative;
