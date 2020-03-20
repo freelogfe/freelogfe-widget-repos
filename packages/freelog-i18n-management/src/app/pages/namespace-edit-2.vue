@@ -308,6 +308,47 @@ export default {
         this.checkModuleIsEmpty()
       }
     },
+    handleChanges(updateData) {
+      const { key, operation, moduleName } = updateData
+      const changedKeys = this.changedKeys
+      // 当前变更的key是否存在“已变更key的列表”，并获取它的序号
+      let targetIndex = -1
+      for (let i = 0; i < changedKeys.length; i++) {
+        if (changedKeys[i].key === key && changedKeys[i].moduleName === moduleName) {
+          targetIndex = i
+          break
+        }
+      }
+      switch (operation) {
+        case 'update': {
+          if (targetIndex !== -1) {
+            changedKeys.splice(targetIndex, 1)
+          }
+          changedKeys.unshift(updateData)
+          const i18nData = this.getModuleI18nData(moduleName)
+          for (const lang of this.languages) {
+            objectPath.set(i18nData, `${lang}.${key}`, updateData[lang])
+          }
+          break
+        }
+        case 'delete': {
+          if (targetIndex !== -1) {
+            changedKeys.splice(targetIndex, 1)
+          } 
+          changedKeys.unshift(updateData)
+          break
+        }
+        case 'add': {
+          changedKeys.unshift(updateData)
+          const i18nData = this.getModuleI18nData(moduleName)
+          for (const lang of this.languages) {
+            objectPath.set(i18nData, `${lang}.${key}`, '')
+          }
+          this.refreshSidebar()
+          break
+        }
+      }
+    },
     validateNewModule(name) {
       clearTimeout(this.timer)
       this.timer = setTimeout(() => {
@@ -393,52 +434,9 @@ export default {
       }
       localStorage.setItem(I18n_NOT_PUSH_MODULES, JSON.stringify(notPushModules))
     },
-    handleChanges(updateData) {
-      const { key, operation, moduleName } = updateData
-      const changedKeys = this.changedKeys
-      // 当前变更的key是否存在“已变更key的列表”，并获取它的序号
-      let targetIndex = -1
-      for (let i = 0; i < changedKeys.length; i++) {
-        if (changedKeys[i].key === key && changedKeys[i].moduleName === moduleName) {
-          targetIndex = i
-          break
-        }
-      }
-      switch (operation) {
-        case 'update': {
-          if (targetIndex !== -1) {
-            changedKeys.splice(targetIndex, 1)
-          }
-          changedKeys.unshift(updateData)
-          const i18nData = this.getModuleI18nData(moduleName)
-          for (const lang of this.languages) {
-            objectPath.set(i18nData, `${lang}.${key}`, updateData[lang])
-          }
-          break
-        }
-        case 'delete': {
-          if (targetIndex !== -1) {
-            changedKeys.splice(targetIndex, 1)
-          } 
-          changedKeys.unshift(updateData)
-          break
-        }
-        case 'add': {
-          if (targetIndex === -1) {
-            changedKeys.unshift(updateData)
-            const i18nData = this.getModuleI18nData(moduleName)
-            for (const lang of this.languages) {
-              objectPath.set(i18nData, `${lang}.${key}`, '')
-            }
-          }
-          this.refreshSidebar()
-          break
-        }
-      }
-    },
     async saveChanges() {
       const saveData = this.resolveSaveData()
-      // console.log('saveChanges --', JSON.parse(JSON.stringify(saveData)))
+      console.log('saveChanges --', JSON.parse(JSON.stringify(saveData)))
       
       const res = await window.FreelogApp.QI.fetch('//i18n.testfreelog.com/v1/i18n/trackedRepository/data', {
         method: 'PUT',

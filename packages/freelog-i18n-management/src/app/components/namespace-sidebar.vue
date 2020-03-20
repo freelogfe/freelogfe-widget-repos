@@ -2,8 +2,11 @@
     <div class="i-m-nem-sidebar" v-if="renderedKeysMap.size !== 0">
       <div v-if="selectedModuleName === nameOfAllModule">
         <el-collapse v-model="activeNames">
-          <el-collapse-item v-for="_module of reposModules" :key="_module.name" :title="_module.name" :name="_module.name">
-            <ul v-if="renderedKeysListMap[_module.name] != null && renderedKeysListMap[_module.name].length">
+          <el-collapse-item v-for="_module of reposModules" v-show="renderedKeysListMap[_module.name] != null && renderedKeysListMap[_module.name].length"
+            :key="_module.name" 
+            :title="_module.name" 
+            :name="_module.name">
+            <ul v-if="renderedKeysListMap[_module.name] != null">
               <li
                 :class="{'active': item.key === selectedKeyItem.key && selectedKeyItem.moduleName === _module.name}"
                 v-for="(item, index) in renderedKeysListMap[_module.name]" 
@@ -16,7 +19,7 @@
                 {{item.key}}
               </li>
             </ul>
-            <div class="no-keys" v-else>No Kyes...</div>
+            <!-- <div class="no-keys" v-else>No Kyes...</div> -->
           </el-collapse-item>
         </el-collapse>
       </div>
@@ -84,6 +87,7 @@ export default {
       this.$emit('update:selectedKeyItem', item)
     },
     refreshSelectedKeyItem() {
+      console.log("「ChangedKeys」", JSON.parse(JSON.stringify(this.changedKeys)))
       let list
       if (this.selectedModuleName !== this.nameOfAllModule) {
         this.selectedModuleKeysList = this.renderedKeysListMap[this.selectedModuleName]
