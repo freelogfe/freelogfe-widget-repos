@@ -51,14 +51,18 @@
           <el-button class="i-m-nem-key-copy" type="primary" size="mini" plain>copy</el-button>
         </clipboard>
       </div>
-      <namespace-card 
-        v-for="lang in languages" 
-        :key="lang"
-        :language="lang"
-        :title="languagesMap[lang]"
-        :selectedKeyItem="selectedKeyItem"
-        :checkLanguageValue="checkLanguageValue"
-        @value-update="handleChanges"></namespace-card>
+      <key-tags :selectedKeyItem="selectedKeyItem" :repositoryName="repositoryName" :allKeysInfo="allKeysInfo"></key-tags>
+      <div class="clearfix">
+        <namespace-card 
+          v-for="lang in languages" 
+          :key="lang"
+          :language="lang"
+          :title="languagesMap[lang]"
+          :selectedKeyItem="selectedKeyItem"
+          :checkLanguageValue="checkLanguageValue"
+          @value-update="handleChanges"></namespace-card>
+      </div>
+      
     </div>
     <div class="i-m-nem-empty" v-else>
       <div class="empty-module-box" v-if="selectedModuleName !== ALL_MODULES && selectedModuleIsEmpty === true">
@@ -106,17 +110,19 @@
 <script>
 import objectPath from 'object-path'
 import NamespaceCard from '../components/namespace-card.vue'
+import KeyTags from '../components/key-tags.vue'
 import Clipboard from '../components/clipboard.vue'
 import NamespaceSidebar from '../components/namespace-sidebar.vue'
 import { ALL_MODULES, I18n_NOT_PUSH_KEYS, I18n_NOT_PUSH_MODULES } from '../enum.js'
 
 export default {
   name: 'namespace-edit-mode',
-  components: { NamespaceCard, Clipboard, NamespaceSidebar },
+  components: { NamespaceCard, KeyTags, Clipboard, NamespaceSidebar },
   props: {
     languages: Array,
     repository: Object,
     allModuleData: Object,
+    allKeysInfo: Object,
   },
   data() {
     return {

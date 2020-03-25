@@ -1,5 +1,5 @@
 <template>
-  <div class="i18n-management-container">
+  <div class="i18n-management-container" v-loading="loadingVisible" element-loading-background="rgba(255, 255, 255, 0.5)">
     <div class="imc-header">
       <h2>Freelog I18n</h2>
       <div class="repos-select-box">
@@ -51,6 +51,7 @@
           v-show="targetComponentId === modes[1].id"
           :repository="selectedRepository"
           :allModuleData="allModuleData"
+          :allKeysInfo="allKeysInfo"
           :languages="languages"
           @add-module-success="addModuleSuccess"
           @del-module-success="delModuleSuccess"
@@ -81,6 +82,7 @@ export default {
       selectedRepository: null, 
       selectedReposName: '',
       allModuleData: null,
+      allKeysInfo: null,
       selectedReposChanges: [],
       showUpdatePopover: false,
       showEmptyCommitError: false,
@@ -88,6 +90,7 @@ export default {
       isPushing: false,
       showGithubOAuthBtn: false,
       githubUser: null,
+      loadingVisible: false
     }
   },
   computed: {
@@ -113,12 +116,20 @@ export default {
   },
   methods: {
     async init() {
-      await this.fetchTrackedRepositories()
+      this.loadingVisible = true
+      try {
+        await this.fetchTrackedRepositories()
+      } catch(e) {
+        console.log('fetchTrackedRepositories - Error:', e)
+      } finally {
+        this.loadingVisible = false
+      }
     },
     async fetchTrackedRepositories() {
       const res = await window.FreelogApp.QI.fetch('//i18n.testfreelog.com/v1/i18n/trackedRepositories/list').then(res => res.json())
       if(res.errcode === 0 && res.data.length) {
         this.resolveTrackedRepositories(res.data)
+        await this.fetchAllKeysInfo()
         await this.fetchAllModuleData()
       }
     },
@@ -128,6 +139,18 @@ export default {
       this.selectedReposName = this.selectedRepository.repositoryName
       this.selectedReposChanges = this.selectedRepository.repositoryChanges
         this.getLanguages()
+    },
+    async fetchAllKeysInfo() {
+      return window.FreelogApp.QI.fetch(`//i18n.testfreelog.com/v1/i18n/trackedRepository/keyInfo?pathType=0&repositoryName=${this.selectedReposName}`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.errcode === 0) {
+            this.allKeysInfo = res.data
+          } else {
+            throw new Error(res.msg)
+          }
+        })
+        .catch(e => this.$error.showErrorMessage(e))
     },
     async fetchAllModuleData() {
       return window.FreelogApp.QI.fetch(`//i18n.testfreelog.com/v1/i18n/trackedRepository/data?pathType=0&repositoryName=${this.selectedReposName}`)
@@ -199,7 +222,7 @@ export default {
 
 <style lang="less" scoped>
 .i18n-management-container {
-  min-width: 1080px;
+  min-width: 1080px; min-height: 100vh;
   .imc-header {
     display: flex; align-items: center; 
     position: absolute; left: 0; right: 0; z-index: 100;

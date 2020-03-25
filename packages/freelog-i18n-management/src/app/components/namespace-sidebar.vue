@@ -87,7 +87,6 @@ export default {
       this.$emit('update:selectedKeyItem', item)
     },
     refreshSelectedKeyItem() {
-      console.log("「ChangedKeys」", JSON.parse(JSON.stringify(this.changedKeys)))
       let list
       if (this.selectedModuleName !== this.nameOfAllModule) {
         this.selectedModuleKeysList = this.renderedKeysListMap[this.selectedModuleName]

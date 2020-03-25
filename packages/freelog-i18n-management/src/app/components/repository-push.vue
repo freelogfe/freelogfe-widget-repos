@@ -20,13 +20,15 @@
       <div class="imc-commitMsg">
         <el-tag size="mini" @click="addMsgForUpdateKey">文案更新</el-tag>
         <el-tag size="mini" @click="addMsgForAddModule">模块更新</el-tag>
+        <el-tag size="mini" @click="addMsgForTest">测试</el-tag>
       </div>
       <el-input type="textarea" :rows="2" v-model="commitMsg"></el-input>
     </div>
     <div class="imc-repos-changes-box">
       <h4>共{{repositoryChanges.length}}个文件变更：</h4>
       <p class="imc-repos-change-item" v-for="(change, index) in repositoryChanges" :key="'change'+index">
-        <span :class="[change.type]">{{change.type}}: </span>{{change.path}}
+        <span :class="[change.type]">{{change.type}}: </span>
+        {{change.path}}<a :href="`//i18n.testfreelog.com/v1/i18n/file/download?repositoryName=${repositoryName}&filePath=${change.path}`" target="_blank">下载</a>
       </p>
     </div>
     <div style="text-align: right;">
@@ -88,7 +90,7 @@ export default {
         }
       } catch(e) {
         this.$message.error(e.toString())
-        console.err('commitAndPushChanges - e', e)
+        console.error('commitAndPushChanges - e', e)
       } finally {
         this.isPushing = false
       }  
@@ -141,10 +143,7 @@ export default {
           console.error('addMsgForUpdateKey --', e)
         }
       }
-      msg = `Key更新${msg}\n`
-      const regE = new RegExp(msg, 'g')
-      this.commitMsg = this.commitMsg.replace(regE, '')
-      this.commitMsg = msg + this.commitMsg
+      this.setCommmitMsg(`Key更新${msg}\n`)
     },
     addMsgForAddModule() {
       let msg = ''
@@ -164,7 +163,9 @@ export default {
           console.error('addMsgForAddModule --', addMsgForAddModule)
         }
       }
-      msg = `新增模块${msg};\n`
+      this.setCommmitMsg(`新增模块${msg};\n`)
+    },
+    setCommmitMsg(msg) {
       const regE = new RegExp(msg, 'g')
       this.commitMsg = this.commitMsg.replace(regE, '')
       this.commitMsg = msg + this.commitMsg
@@ -172,6 +173,9 @@ export default {
     clearNotPushInfo() {
       localStorage.setItem(I18n_NOT_PUSH_MODULES, '[]')
       localStorage.setItem(I18n_NOT_PUSH_KEYS, '[]')
+    },
+    addMsgForTest() {
+      this.setCommmitMsg('i18n测试')
     }
   },
   async mounted() {
@@ -193,6 +197,7 @@ export default {
       &.deleted { color: #F56C6C; }
       &.added { color: #67C23A; }
     }
+    a { margin-left: 10px; font-size: 12px; text-decoration: underline; }
   }
 }
 .imc-github-user {
