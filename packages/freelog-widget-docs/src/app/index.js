@@ -1,15 +1,14 @@
-
+import Vue from 'vue'
 import MarkdownParser from '@freelog/freelog-markdown-parser'
 import catalogParser from './catalog-parser'
 import './index.less'
-// var htmlStr = require('./index.html')
 
-var Vue = null
+import { Tag, Image, Card, Backtop, Button } from 'element-ui'
+
 var historyStateHandler = null
 class FreelogWidgetDocs extends HTMLElement {
   constructor() {
     super()
-    // this.innerHTML = htmlStr
   }
 
   connectedCallback (){
@@ -26,13 +25,17 @@ class FreelogWidgetDocs extends HTMLElement {
   }
 
   init() {
-    Vue = window.f_common_lib.Vue
     this.registerComponents()
     this.render()
   }
 
   render() {
     const self = this
+    Vue.component(Tag.name, Tag)
+    Vue.component(Image.name, Image)
+    Vue.component(Card.name, Card)
+    Vue.component(Backtop.name, Backtop)
+    Vue.component(Button.name, Button)
     new Vue({
       el: '.freelog-widget-docs-app',
       data() {
@@ -103,6 +106,7 @@ class FreelogWidgetDocs extends HTMLElement {
       mounted() {
         this.loadCatalogPresentableList()
           .then((docsList) => {
+            window.FreelogApp.$loading.hide()
             this.docsList = docsList.map(item => {
               const { resourceInfo, updateDate, previewImages } = item
               const d = new Date(updateDate)
@@ -115,7 +119,6 @@ class FreelogWidgetDocs extends HTMLElement {
               } else if(resourceInfo && resourceInfo.previewImages[0]) {
                 item.previewUrl = resourceInfo && resourceInfo.previewImages[0]
               }
-              
               return item 
             })
             
@@ -137,11 +140,11 @@ class FreelogWidgetDocs extends HTMLElement {
           const docsTags = this.docsTags
           if(this.mdPresentablesList.length === 0) {
             return this.QI.pagingGetPresentables({ 
-              resourceType: "markdown", 
-              isLoadingResourceInfo: 1, 
-              tags: docsTags,
-              pageSize: 100
-            })
+                resourceType: "markdown", 
+                isLoadingResourceInfo: 1, 
+                tags: docsTags,
+                pageSize: 100
+              })
               .then(res => {
                 if(res.errcode === 0) {
                   this.mdPresentablesList = res.data.dataList.map(p => {
@@ -158,10 +161,10 @@ class FreelogWidgetDocs extends HTMLElement {
         },
         loadCatalogPresentableList() {
           return window.FreelogApp.QI.pagingGetPresentables({ 
-            resourceType: "catalog",
-            isLoadingResourceInfo: 1, 
-            pageSize: 100
-          })
+              resourceType: "catalog",
+              isLoadingResourceInfo: 1, 
+              pageSize: 100
+            })
             .then(res => {
               if(res.errcode === 0) {
                 const arr = res.data.dataList.sort((p1, p2) => {
@@ -173,11 +176,11 @@ class FreelogWidgetDocs extends HTMLElement {
                   return arr
                 }else {
                   this.catalogErrorText = '该节点未上线目录文件！'
-                  return Promise.reject(null)
+                  return Promise.reject([])
                 }
               }else {
                 this.catalogErrorText = res.msg
-                return Promise.reject(null)
+                return Promise.reject([])
               }
             })
         },
@@ -224,7 +227,7 @@ class FreelogWidgetDocs extends HTMLElement {
         },
         resolveCatalogData(data) {
           const { catalogTreeData, catalogList } = catalogParser(data)
-              
+          
           this.catalogList = catalogList.map((item, index) => {
             const { releaseId, title } = item
             this.catalogMap[title] = { index, releaseId, title }
@@ -362,6 +365,7 @@ class FreelogWidgetDocs extends HTMLElement {
   registerComponents() {
     const self = this
     Vue.component('sidebar-item', {
+      template: self.$sidebarItemTpl.innerHTML,
       props: ['data', 'index', 'docsName'],
       methods: {
         tapSidebarItem(data) {
@@ -369,12 +373,13 @@ class FreelogWidgetDocs extends HTMLElement {
           this.$root.activeTitle = data.title
         }
       },
-      template: self.$sidebarItemTpl.innerHTML,
     })
   }
 }
 
 customElements.define('freelog-widget-docs', FreelogWidgetDocs)
 
-
+// export async function bootstrap() {}
+// export async function mount() {}
+// export async function unmount() {}
 

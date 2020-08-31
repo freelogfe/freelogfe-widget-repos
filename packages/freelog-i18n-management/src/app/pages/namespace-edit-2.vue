@@ -21,6 +21,18 @@
         placeholder="请输入内容进行Key筛选" 
         v-model="searchInputStr" @keyup.enter.native="refreshSidebar">
       </el-input>
+      <div class="selected-tag-box" v-if="selectedTag != ''">
+        <label for="tags-select">筛选标签：</label>
+        <el-input
+          class="selected-tag-input"
+          v-if="selectedTagInputVisible"
+          v-model="selectedTagInputVal"
+          ref="selectedTagInput"
+          size="small"
+          @keyup.enter.native="handleTagInputConfirm"
+          @blur="handleTagInputConfirm"></el-input>
+        <el-tag v-else size="small" closable @close="selectedTag = ''" @click="showSelectedTagInput">{{selectedTag}}</el-tag>
+      </div>
       <el-badge class="save-key-changes-btn" slot="reference" :value="changedKeys.length" :hidden="changedKeys.length === 0">
         <el-button type="primary" size="small" :disabled="changedKeys.length === 0" @click="saveChanges">
           保存<span>（共{{changedKeys.length}}个Key更改）</span>  
@@ -30,17 +42,18 @@
       <el-button class="add-new-module-btn" type="danger" size="small" @click="newModuleDialogVisible = true">新增模块</el-button>
     </div>
     <namespace-sidebar
-      :refresSidebarCount="refresSidebarCount"
+      :refresSidebarCount.sync="refresSidebarCount"
       :selectedModuleName="selectedModuleName"
+      :repositoryName="repositoryName"
       :searchInputStr="searchInputStr"
       :selectedState="selectedState"
+      :filteredKeyInfos="filteredKeyInfos"
       :reposModules="reposModules"
       :languages="languages"
       :reposModulesMap="reposModulesMap"
       :changedKeysMap="changedKeysMap"
       :selectedKeyItem.sync="selectedKeyItem"
-      :getModuleI18nData="getModuleI18nData"
-      :checkLanguageValue="checkLanguageValue"></namespace-sidebar>
+      :allModuleData="allModuleData"></namespace-sidebar>
     <div class="i-m-nem-body" v-if="selectedKeyItem != null">
       <div class="i-m-nem-breadcrumb-box">
         <el-breadcrumb separator="/" v-if="selectedRepoModule != null">
@@ -51,18 +64,22 @@
           <el-button class="i-m-nem-key-copy" type="primary" size="mini" plain>copy</el-button>
         </clipboard>
       </div>
-      <key-tags :selectedKeyItem="selectedKeyItem" :repositoryName="repositoryName" :allKeysInfo="allKeysInfo"></key-tags>
+      <key-tags 
+        :languages="languages"
+        :repositoryName="repositoryName"
+        :selectedTag.sync="selectedTag"
+        :selectedKeyItem="selectedKeyItem"
+        :keyInfo.sync="selectedKeyInfo"></key-tags>
       <div class="clearfix">
         <namespace-card 
           v-for="lang in languages" 
           :key="lang"
           :language="lang"
+          :languages="languages"
           :title="languagesMap[lang]"
           :selectedKeyItem="selectedKeyItem"
-          :checkLanguageValue="checkLanguageValue"
           @value-update="handleChanges"></namespace-card>
       </div>
-      
     </div>
     <div class="i-m-nem-empty" v-else>
       <div class="empty-module-box" v-if="selectedModuleName !== ALL_MODULES && selectedModuleIsEmpty === true">
@@ -122,7 +139,6 @@ export default {
     languages: Array,
     repository: Object,
     allModuleData: Object,
-    allKeysInfo: Object,
   },
   data() {
     return {
@@ -130,9 +146,9 @@ export default {
       allModuleLabel: '全部模块',
       languagesMap: {
         'en': '英文', 
+        'en-US': '英文',
         'zh-CN': '中文',
       },
-      topedLanguage: 'zh-CN',
       isRefreshingSidebar: false,
       searchInputStr: '',
       selectedRepoModule: null,
@@ -140,6 +156,7 @@ export default {
       filteredNamespaceList: [],
       renderedKeysListMap: {},
       selectedKeyItem: null,
+      selectedKeyInfo: null,
       newKeyDialogVisible: false,
       newKey: '',
       newKeyOfModuleName: '',
@@ -159,6 +176,10 @@ export default {
       selectedState: 'all',
       refresSidebarCount: 0,
       selectedModuleIsEmpty: false,
+      filteredKeyInfos: [],
+      selectedTag: '',
+      selectedTagInputVal: '',
+      selectedTagInputVisible: false,
     }
   },
   computed: {
@@ -192,7 +213,25 @@ export default {
     },
     selectedKeyItem() {
       if (this.selectedKeyItem == null) return
+      console.log()
       this.selectedRepoModule = this.reposModulesMap[this.selectedKeyItem.moduleName]
+      this.getKeyInfo()
+    },
+    selectedTag() {
+      this.filteredKeyInfos = []
+      if (this.selectedTag !== '') {
+        window.FreelogApp.QI.fetch(`//i18n-ts.testfreelog.com/v1/i18nKeyInfos/list?tags=${this.selectedTag}`)
+          .then(resp => resp.json())
+          .then(res => {
+            if (res.errcode === 0) {
+              this.filteredKeyInfos = res.data != null ? res.data : []
+            }
+          })
+      } 
+    },
+    allModuleData() {
+      this.refreshSidebar()
+      this.exchangeModuleName(this.ALL_MODULES)
     },
   },
   methods: {
@@ -209,7 +248,7 @@ export default {
       if (this.selectedModuleName === ALL_MODULES) {
         this.selectedModuleIsEmpty = false
       } else {
-        const moduleData = this.getModuleI18nData(this.selectedModuleName)
+        const moduleData = this._getModuleI18nData(this.selectedModuleName)
         const tmpData = Object.values(moduleData)
         const dataKays = Object.keys(tmpData[0] || {})
         this.selectedModuleIsEmpty = dataKays.length === 0
@@ -222,37 +261,11 @@ export default {
         this.languages.unshift(lang)
       }
     },
-    async exchangeModuleName(moduleName) {
-      // if (this.changedKeys.length > 0) {
-      //   try {
-      //     const tmpModuleName = moduleName === this.ALL_MODULES ? this.allModuleLabel : moduleName
-      //     await this.$confirm(`当前操作将会清空模块${tmpModuleName}的${this.changedKeys.length}个key更改，是否继续？`, '提示', {
-      //       confirmButtonText: '确定',
-      //       cancelButtonText: '取消',
-      //       type: 'warning'
-      //     })
-      //     this.$message({ type: 'success',  message: `已切换至名称为${tmpModuleName}的模块（或项目）!`})
-      //   } catch(e) {
-      //     this.$message({ type: 'info', message: '已取消切换模块（或项目）'}) 
-      //     return
-      //   }
-      // } 
+    exchangeModuleName(moduleName) {
       this.selectedModuleName = moduleName
     },
-    getModuleI18nData(moduleName) {
-      if (this.allModuleData != null) {
-        return objectPath.get(this.allModuleData, [ this.repositoryName, moduleName ])
-      } else {
-        return null
-      }
-    },
-    checkLanguageValue(item) {
-      let isExistEmptyValue = false
-      this.languages.forEach(lang => {
-        isExistEmptyValue = isExistEmptyValue || !item[lang]
-      })
-      item.isExistEmptyValue = isExistEmptyValue
-      return item 
+    _getModuleI18nData(moduleName) {
+      return this.getModuleI18nData(this.allModuleData, this.repositoryName, moduleName)
     },
     exchangeState(state) {
       this.selectedState = state
@@ -290,7 +303,7 @@ export default {
     isKeyExisted(key) {
       if (this.changedKeysMap[key] != null) return true
       for (const _module of this.reposModules) {
-        const i18nData = this.getModuleI18nData(_module.name)
+        const i18nData = this._getModuleI18nData(_module.name)
         if (i18nData != null) {
           if (objectPath.get(i18nData['zh-CN'], key) != null) {
             return true
@@ -331,7 +344,7 @@ export default {
             changedKeys.splice(targetIndex, 1)
           }
           changedKeys.unshift(updateData)
-          const i18nData = this.getModuleI18nData(moduleName)
+          const i18nData = this._getModuleI18nData(moduleName)
           for (const lang of this.languages) {
             objectPath.set(i18nData, `${lang}.${key}`, updateData[lang])
           }
@@ -346,7 +359,7 @@ export default {
         }
         case 'add': {
           changedKeys.unshift(updateData)
-          const i18nData = this.getModuleI18nData(moduleName)
+          const i18nData = this._getModuleI18nData(moduleName)
           for (const lang of this.languages) {
             objectPath.set(i18nData, `${lang}.${key}`, '')
           }
@@ -380,7 +393,7 @@ export default {
       const moduleName = this.newModule.replace(/^(\s*)|(\s*)$/g, '')
       if (moduleName !== '') {
         const repositoryName = this.repositoryName
-        const res = await window.FreelogApp.QI.fetch('//i18n.testfreelog.com/v1/i18n/trackedRepository/newModule', {
+        const res = await window.FreelogApp.QI.fetch('//i18n-ts.testfreelog.com/v1/i18nRepository/newModule', {
           method: 'POST',
           body: { 
             moduleName, repositoryName,
@@ -407,7 +420,7 @@ export default {
           type: 'warning'
         })
         const repositoryName = this.repositoryName
-        const res = await window.FreelogApp.QI.fetch('//i18n.testfreelog.com/v1/i18n/trackedRepository/module', {
+        const res = await window.FreelogApp.QI.fetch('//i18n-ts.testfreelog.com/v1/i18nRepository/module', {
           method: 'DELETE',
           body: { 
             moduleName, repositoryName,
@@ -442,14 +455,13 @@ export default {
     },
     async saveChanges() {
       const saveData = this.resolveSaveData()
-      console.log('saveChanges --', JSON.parse(JSON.stringify(saveData)))
       
-      const res = await window.FreelogApp.QI.fetch('//i18n.testfreelog.com/v1/i18n/trackedRepository/data', {
+      const res = await window.FreelogApp.QI.fetch('//i18n-ts.testfreelog.com/v1/i18nRepository/data', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: saveData
+        body: JSON.stringify(saveData)
       }).then(res => res.json())
       if (res.errcode === 0) {
         this.$message.success(`保存成功！`)
@@ -464,7 +476,7 @@ export default {
         })
         
       } else {
-        this.$message.error(`保存失败！`)
+        this.$message.error(`保存失败！${ res.msg}`)
       }
     },
     resolveSaveData() {
@@ -476,7 +488,7 @@ export default {
       // 更新本地的i18nData
       for (const keyItem of changedKeys) {
         const { key, moduleName } = keyItem
-        const tmpI18nData = this.getModuleI18nData(moduleName)
+        const tmpI18nData = this._getModuleI18nData(moduleName)
         const isMulti = this.isMultifileStructure(moduleName)
         if (isMulti) {
           const tmpArr = key.split('.')
@@ -491,7 +503,7 @@ export default {
       // 获取发生变更的文件（路径&内容）
       for (const moduleName of changedModulesSet) {
         const _module = this.reposModulesMap[moduleName]
-        const tmpI18nData = this.getModuleI18nData(moduleName)
+        const tmpI18nData = this._getModuleI18nData(moduleName)
         const isMulti = this.isMultifileStructure(moduleName)
         if (isMulti) {
           for (const filename of changedFilesSet) {
@@ -536,6 +548,59 @@ export default {
       })
       localStorage.setItem(I18n_NOT_PUSH_KEYS, JSON.stringify(notPushKeys))
     },
+    showSelectedTagInput() {
+      // 功能未完全实现， 暂时关闭
+      // return 
+      
+      this.selectedTagInputVisible = true
+      this.selectedTagInputVal = this.selectedTag
+      this.$nextTick(_ => {
+        this.$refs.selectedTagInput.$refs.input.focus()
+      })
+    },
+    async handleTagInputConfirm() {
+      const newTag = this.selectedTagInputVal.replace(/^(\s*)|(\s*)$/g, '')
+      if (newTag !== '') {
+        const postData = {
+          repositoryName: this.repositoryName,
+          selectedTag: this.selectedTag,
+          newTag, 
+        }
+      
+        const result = await window.FreelogApp.QI.fetch('//i18n-ts.testfreelog.com/v1/i18nKeyInfos/tags', {
+          method: 'PUT',
+          body: postData
+        }).then(res => res.json()).catch(e => e)
+        if (result instanceof Error) {
+          this.$message.error(result)
+        } else {
+          if (result.errcode === 0 && result.data != null) {
+            this.$message.success('标签修改成功！')
+            for (let keyInfo of result.data) {
+              if (keyInfo.name === this.selectedKeyItem.key) {
+                this.selectedKeyInfo = keyInfo
+                // this.selectedItemTags = keyInfo.tags
+                break
+              }
+            }
+          } else {
+            this.$message.error(`标签修改失败！${result.msg}`)
+          } 
+        }
+      }
+      this.selectedTagInputVisible = false
+      this.selectedTagInputVal = ''
+      this.selectedTag = newTag
+    },
+    async getKeyInfo() {
+      const { key, moduleName} = this.selectedKeyItem
+      const { repositoryName } = this
+      const url = `//i18n-ts.testfreelog.com/v1/i18nKeyInfos?name=${key}&moduleName=${moduleName}&repositoryName=${repositoryName}`
+      const result = await window.FreelogApp.QI.fetch(url).then(resp => resp.json())
+      if (result.errcode === 0) {
+        this.selectedKeyInfo = result.data
+      } 
+    },
   },
   mounted() {
     this.init()
@@ -569,11 +634,14 @@ export default {
 .i-m-nem-head {
   padding: 20px 15px; border-bottom: 1px solid #e6e6e6;
   background-color: #fff;
-  .module-select-box, .module-search-input, .state-select-box {
+  .module-select-box, .module-search-input, .state-select-box, .selected-tag-box {
     display: inline-block; margin-right: 15px; font-size: 14px;
   }
   .el-select {
     .el-input__inner { padding-left: 8px; }
+  }
+  .selected-tag-box {
+    .selected-tag-input { width: 60px; }
   }
   .state-select-box {
     .el-select {
@@ -604,6 +672,9 @@ export default {
     .el-breadcrumb {line-height: 32px; }
     .i-m-nem-selected-key { margin-left: 30px; color: #409EFF; }
     .i-m-nem-key-copy { padding: 3px 6px; }
+  }
+  .i-nem-edit-key-tags {
+    .el-tag { cursor: pointer; }
   }
   .i-m-nem-edit-item { 
     float: left; width: 48%;

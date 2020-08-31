@@ -1,34 +1,33 @@
-import Vue from 'vue'
-import router from './router'
-import ElementUI from 'element-ui'
-import App from './pages/app'
-
 import './index.less'
 import 'element-ui/lib/theme-chalk/index.css'
 
+import Vue from 'vue'
+import VueRouter from 'vue-router'
+import ElementUI from 'element-ui'
+import App from './pages/app'
+import Home from './pages/index'
+
 var template = require('./index.html');
 
-class FreelogI18nManagement extends HTMLElement {
-  constructor() {
-    super()
-  }
+Vue.use(ElementUI)
+Vue.use(VueRouter)
+const router = new VueRouter({
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    } else {
+      return {x: 0, y: 0}
+    }
+  },
+  routes: [{
+    path: '/',
+    component: Home,
+  }]
+})
 
-
-  initApp() {
-    Vue.use(ElementUI);
-    var app = new Vue({
-      el: this.querySelector('.freelog-i18n-management-app'),
-      router,
-      template: '<App/>',
-      components: {App}
-    })
-  }
-
-  connectedCallback() {
-    this.innerHTML = template
-    this.initApp()
-  }
-}
-
-
-customElements.define('freelog-i18n-management', FreelogI18nManagement);
+var app = new Vue({
+  el: '#freelog-i18n-management-app',
+  router,
+  template: '<App/>',
+  components: {App}
+})

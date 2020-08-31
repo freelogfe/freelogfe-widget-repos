@@ -1,34 +1,30 @@
-var webpack = require('webpack')
-var merge = require('webpack-merge')
-
 const TerserPlugin = require('terser-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin")
-
 const baseConfig = require('./webpack.base.conf')
+const merge = require('webpack-merge')
+const path = require('path')
+
+const minimist = require('minimist')
+const argv = minimist(process.argv.slice(2))
+const staticDomain = argv.env === 'prod' ? '//static.freelog.com' :  '//static.testfreelog.com'
 
 module.exports = merge(baseConfig, {
   mode: 'production',
-  devtool: '#source-map',
-  performance: {
-    hints: false
+
+  output: {
+    crossOriginLoading: 'anonymous',
+    publicPath: `${staticDomain}/pagebuild/`,
   },
 
   module: {
     rules: [
-      /* config.module.rule('css') */
       {
-        test: /\.css$/,
+        test: /\.(less|css)$/,
         use: [
           'style-loader',
-          'css-loader',
-        ]
-      },
-      /* config.module.rule('less') */
-      {
-        test: /\.less$/,
-        use: [
-          'style-loader',
+          'vue-style-loader',
+          // MiniCssExtractPlugin.loader,
           'css-loader',
           'less-loader',
         ]
@@ -46,12 +42,13 @@ module.exports = merge(baseConfig, {
   },
 
   plugins: [
-    new MiniCssExtractPlugin({
-      filename: "[name].css",
-      chunkFilename: "[id].css"
-    }),
-    new webpack.LoaderOptionsPlugin({
-      minimize: true
-    })
-  ]
+    // new HtmlWebpackPlugin({
+    //   preload: ['**/*.*'],
+    //   inject: 'body',
+    //   filename: 'index.html',
+    //   template: path.resolve(__dirname, '../public/index.html'),
+    //   // excludeChunks: [ tmpName ],
+    // }),
+  ],
 })
+

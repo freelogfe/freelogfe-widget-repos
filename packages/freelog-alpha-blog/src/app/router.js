@@ -9,7 +9,6 @@ import Home from './pages/home/index.vue'
 
 Vue.use(VueRouter)
 
-
 const routes = [{
   path: '/',
   component: Layout,
@@ -45,7 +44,32 @@ const router = new VueRouter({
       return {x: 0, y: 0}
     }
   },
-  routes
+  routes: [{
+    path: '/',
+    component: Layout,
+    children: [
+      {
+        path: '',
+        component: Home
+      },
+      {
+        path: 'archives',
+        component: Archives
+      },
+      {
+        path: 'tags/:tag',
+        component: TagsArticles
+      },
+      {
+        path: 'article/:articleId',
+        component: Article
+      },
+      {
+        path: 'about',
+        component: AboutMe
+      }
+    ]
+  }]
 });
 
 

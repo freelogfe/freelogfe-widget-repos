@@ -40,7 +40,7 @@
 				<div class="play-volume">
 					<span :class="{ 'disabled': volumeDisabled }" @click="exchangeVolumeMuted"></span>
 				</div>
-				<el-slider v-model="volumeNumber" max="100" :show-tooltip="false" @input="changeVolume"></el-slider>
+				<el-slider v-model="volumeNumber" :max="100" :show-tooltip="false" @input="changeVolume"></el-slider>
 			</div>
 		</div> 
 	</div>

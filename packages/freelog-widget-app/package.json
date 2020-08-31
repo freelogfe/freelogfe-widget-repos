@@ -1,0 +1,20 @@
+{
+  "name": "freelog-widget-app",
+  "description": "Freelog widget app",
+  "version": "1.0.0",
+  "author": "wwzh",
+  "license": "MIT",
+  "main": "dist/freelog-widget-app.js",
+  "scripts": {
+    "dev": "freelog-cli-service serve",
+    "build": "freelog-cli-service build",
+    "upload": "freelog-scripts upload",
+    "release": "freelog-scripts release"
+  },
+  "keywords": [],
+  "devDependencies": {
+    "@freelog/cli-service": "^0.1.15",
+    "@freelog/freelog-scripts": "^0.0.18"
+  },
+  "dependencies": {}
+}

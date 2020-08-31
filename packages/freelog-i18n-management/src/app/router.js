@@ -1,7 +1,5 @@
 import VueRouter from 'vue-router'
-import Vue from 'vue'
 import Home from './pages/index'
-Vue.use(VueRouter)
 
 
 const routes = [{
@@ -17,7 +15,10 @@ const router = new VueRouter({
       return {x: 0, y: 0}
     }
   },
-  routes
+  routes: [{
+    path: '/',
+    component: Home,
+  }]
 });
 
 

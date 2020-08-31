@@ -28,7 +28,7 @@
       <h4>共{{repositoryChanges.length}}个文件变更：</h4>
       <p class="imc-repos-change-item" v-for="(change, index) in repositoryChanges" :key="'change'+index">
         <span :class="[change.type]">{{change.type}}: </span>
-        {{change.path}}<a :href="`//i18n.testfreelog.com/v1/i18n/file/download?repositoryName=${repositoryName}&filePath=${change.path}`" target="_blank">下载</a>
+        {{change.path}}<a :href="`//i18n-ts.testfreelog.com/v1/file/download?repositoryName=${repositoryName}&filePath=${change.path}`" target="_blank">下载</a>
       </p>
     </div>
     <div style="text-align: right;">
@@ -71,7 +71,7 @@ export default {
       try {
         this.isPushing = true
         const accessToken = localStorage.getItem('github_access_toekn')
-        const result = await window.FreelogApp.QI.fetch('//i18n.testfreelog.com/v1/i18n/trackedRepository/changes/push', {
+        const result = await window.FreelogApp.QI.fetch('//i18n-ts.testfreelog.com/v1/i18nRepository/changes/push', {
           method: 'POST',
           body: {
             repositoryName: this.repositoryName,
@@ -85,6 +85,7 @@ export default {
           this.showUpdatePopover = false
           this.$emit('update:repositoryChanges', [])
           this.$message.success('提交成功！')
+          this.commitMsg = ''
         } else {
           this.$message.error(result.msg)
         }

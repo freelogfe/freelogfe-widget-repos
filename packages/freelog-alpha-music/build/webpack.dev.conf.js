@@ -1,43 +1,55 @@
-var webpack = require('webpack')
-var merge = require('webpack-merge')
-var FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
+
+
+const merge = require('webpack-merge')
+const path = require('path')
+const TerserPlugin = require('terser-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin")
 
 const baseConfig = require('./webpack.base.conf')
 
-module.exports = merge(baseConfig,{
-  mode: 'development',
-  optimization: {
-    noEmitOnErrors: true,
+module.exports = merge(baseConfig, {
+
+  entry: {
+    // [tmpName]: path.resolve(__dirname, '../node_modules/@freelog/freelog-common-lib/', commonLibPkgJson.main)
   },
+
+  output: {
+    publicPath: '/',
+  },
+
+  mode: 'development',
+
+  devServer: {
+    contentBase: path.join(__dirname, '../dist'),
+    compress: true,
+    disableHostCheck: true,
+    // 当使用 HTML5 History API 时，任意的 404 响应都可能需要被替代为 index.html。
+    historyApiFallback: true,
+    hot: false,
+    host: '0.0.0.0',
+    inline: false,
+    port: 9888,
+  },
+
+  devtool: 'cheap-eval-source-map',
 
   module: {
     rules: [
-      /* config.module.rule('css') */
       {
-        test: /\.css$/,
+        test: /\.(less|css)$/,
         use: [
           'style-loader',
-          'css-loader'
-        ],
-      },
-      /* config.module.rule('less') */
-      {
-        test: /\.less/,
-        use: [
-          'style-loader',
+          'vue-style-loader',
           'css-loader',
-          'less-loader'
-        ],
-      }
+          'less-loader',
+        ]
+      },
     ]
   },
 
-  devtool: '#cheap-module-eval-source-map',
-  performance: {
-    hints: false
-  },
   plugins: [
-    new webpack.HotModuleReplacementPlugin(),
-    new FriendlyErrorsPlugin()
-  ]
+  ],
 })
+
+

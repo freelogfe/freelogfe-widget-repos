@@ -9,7 +9,10 @@ module.exports = {
   },
   output: {
     path: config.build.assetsRoot,
-    filename: `${pkg.name}.js`
+    filename: `${pkg.name}.js`,
+    library: `${pkg}-[name]`,
+    libraryTarget: 'umd',
+    jsonpFunction: `webpackJsonp_${pkg}`,
   },
   module: {
     rules: [
@@ -37,7 +40,7 @@ module.exports = {
           {
             loader: 'url-loader',
             options: {
-              limit: 8192,
+              limit: 81920,
               fallback: {
                 loader: 'file-loader',
                 options: {
@@ -81,7 +84,10 @@ module.exports = {
     ]
   },
   resolve: {
-    extensions: ['.js', '.json']
+    extensions: ['.js', '.json'],
+    alias: {
+      vue$: 'vue/dist/vue.esm.js',
+    },
   },
   plugins: [
   ]

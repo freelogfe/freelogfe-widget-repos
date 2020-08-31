@@ -61,7 +61,7 @@ const throttle = require('lodash/throttle')
 
 var lastSelectedTreeData = null
 export default {
-  name: 'i18n-manament-home',
+  name: 'file-edit-mode',
   components: { codemirror },
   props: {
     repository: Object,
@@ -104,7 +104,22 @@ export default {
       return this.repository ? this.repository.repositoryName : ''
     },
     directoryTree() {
-      return this.repository ? this.repository.directoryTree : []
+      const targetArr = []
+      let tmpArr = this.repository ? this.repository.directoryTree : []
+      tmpArr = tmpArr.filter(item => item.keysType === 'module')
+      for (const moduleItem of tmpArr) {
+        const { children, ...props } = moduleItem
+        const _tmp = { children: [], ...props }
+        targetArr.push(_tmp)
+        if (children.length) {
+          const langItem = children[0]
+          if (langItem.keysType === 'language' && langItem.children.length > 0) {
+            _tmp.children = langItem.children
+            continue
+          }
+        }
+      }
+      return targetArr
     },
   },
   watch: {
@@ -165,7 +180,7 @@ export default {
         }
         default: return
       }
-      const res = await window.FreelogApp.QI.fetch('//i18n.testfreelog.com/v1/i18n/trackedRepository/data', {
+      const res = await window.FreelogApp.QI.fetch('//i18n-ts.testfreelog.com/v1/i18nRepository/data', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'

@@ -26,14 +26,16 @@
 </template>
 
 <script>
+import iMixins from '../mixins.js'
 export default {
   name: 'i18n-namespace-card',
   props: {
     language: String,
+    languages: Array,
     title: String,
     selectedKeyItem: Object,
-    checkLanguageValue: Function,
   },
+  mixins: [ iMixins ],
   data() {
     return {
       value: '',

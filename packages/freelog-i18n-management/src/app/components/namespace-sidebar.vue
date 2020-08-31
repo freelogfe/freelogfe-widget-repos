@@ -40,13 +40,16 @@
 <script>
 import objectPath from 'object-path'
 import { ALL_MODULES } from '../enum.js'
+import iMixins from '../mixins.js'
 export default {
   name: 'namespace-sidebar',
   props: {
     refresSidebarCount: Number,
+    repositoryName: String,
     selectedModuleName: String,
     searchInputStr: String,
     selectedState: String,
+    selectedTag: String,
     reposModules: {
       type: Array,
       default: [],
@@ -55,12 +58,16 @@ export default {
       type: Array,
       default: [],
     },
+    filteredKeyInfos: {
+      type: Array,
+      default: () => [],
+    },
     selectedKeyItem: Object,
     reposModulesMap: Object,
     changedKeysMap: Object,
-    getModuleI18nData: Function,
-    checkLanguageValue: Function,
+    allModuleData: Object,
   },
+  mixins: [ iMixins ],
   data() {
     return {
       nameOfAllModule: ALL_MODULES,
@@ -69,8 +76,9 @@ export default {
         'add': '增',
         'delete': '删'
       },
-      selectedModuleKeysList: [],
       activeNames: [],
+      selectedModuleKeysList: [],
+      filteredKeyInfosMap: new Map(),
       renderedKeysListMap: {},
       renderedKeysMap: new Map()
     }
@@ -80,6 +88,16 @@ export default {
       this.refreshKeysList()
       this.refreshSelectedKeyItem()
       this.activeNames = this.reposModules.map(item => item.name)
+    },
+    filteredKeyInfos() {
+      this.filteredKeyInfosMap = new Map()
+      if (this.selectedTag !== '') {
+        this.filteredKeyInfos.forEach(item => {
+          this.filteredKeyInfosMap.set(item.name, item) 
+          return item
+        })
+      }
+      this.$emit('update:refresSidebarCount', this.refresSidebarCount + 1)
     },
   },
   methods: {
@@ -107,31 +125,6 @@ export default {
         this.handleSelectKey(null)
       }
     },
-    getModuleI18nKeysList(moduleName, moduleI18nData) {
-      if (moduleI18nData == null) {
-        return []
-      }
-      const language = this.topedLanguage || 'zh-CN'
-      return this.getKeysListFromI18nData(moduleI18nData[language], moduleName)
-    },
-    getKeysListFromI18nData(data, moduleName) {
-      const list = []
-      if (data == null) return list
-      for(const [ key, value ] of Object.entries(data)) {
-        if (Array.isArray(value)) {
-          list.push({ key, value, moduleName, valueType: 'array' })
-        } else if (typeof value === 'string') {
-          list.push({ key, value, moduleName, valueType: 'string' })
-        } else {
-          const arr = this.getKeysListFromI18nData(value, moduleName).map(item => {
-            item.key = `${key}.${item.key}`
-            return item
-          })
-          list.push(...arr)
-        }
-      }
-      return list
-    },
     refreshKeysList() {
       console.log('[refreshKeysList]')
       let list 
@@ -143,34 +136,29 @@ export default {
     },
     refreshRenderedKeysListMap(moduleNames) {
       for (const moduleName of moduleNames) {
-        const moduleI18nData = this.getModuleI18nData(moduleName)
+        const moduleI18nData = this.getModuleI18nData(this.allModuleData, this.repositoryName, moduleName)
         let moduleI18nKyesList = this.getModuleI18nKeysList(moduleName, moduleI18nData)
         moduleI18nKyesList = this.formatKeysList(moduleI18nData, moduleI18nKyesList)
-        moduleI18nKyesList = this.rearrangeKeysList(moduleI18nKyesList)
         moduleI18nKyesList = this.filterKeysList(moduleI18nKyesList)
+        moduleI18nKyesList = this.rearrangeKeysList(moduleI18nKyesList)
         this.renderedKeysListMap[moduleName] = moduleI18nKyesList
       }
       this.collectRenderedKey(moduleNames)
     },
-    formatKeysList(i18nData, keysList) {
-      if (i18nData == null || keysList == null) return 
-      const languages = this.languages.filter(lang => lang !== this.topedLanguage)
-      keysList = keysList.map(item => {
-        item[this.topedLanguage] = item.value
-        for (let i = 0; i < languages.length; i++) {
-          const lang = languages[i]
-          item[lang] = objectPath.get(i18nData, `${lang}.${item.key}`)
-        }
-        return item
-      })
-      return keysList
-    },
+    // key排列：置顶已修改或存在空值的key
     rearrangeKeysList(keysList) {
       var rearrangedKeyItems = []
       keysList = keysList.filter(item => {
         const changedkeyItem = this.changedKeysMap[item.key]
         if (changedkeyItem != null && changedkeyItem.moduleName === item.moduleName) {
           rearrangedKeyItems.push(changedkeyItem)
+          return false
+        }
+        return true
+      })
+      keysList = keysList.filter(item => {
+        if (item.isExistEmptyValue) {
+          rearrangedKeyItems.push(item)
           return false
         }
         return true
@@ -208,6 +196,13 @@ export default {
           default: {}
         }
         return isFilter
+      }).filter(item => {
+        if (this.filteredKeyInfos.length === 0) {
+          return true
+        } else {
+          const keyInfo = this.filteredKeyInfosMap.get(item.key)
+          return keyInfo != null && keyInfo.moduleName === item.moduleName
+        }
       })
     },
     collectRenderedKey(moduleNames) {

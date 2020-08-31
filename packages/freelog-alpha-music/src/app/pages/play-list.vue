@@ -7,8 +7,9 @@
         :songPresentable="targetSongPresentable"
         @toggle-play="tapPlayAllSongBtn"
       ></play-list-info>
+
       <el-table :data="targetSongsList" style="width: 100%" v-if="!isMobile">
-        <el-table-column type="index"  width="60"></el-table-column> 
+        <el-table-column type="index" width="60"></el-table-column> 
         <el-table-column label="歌曲">
           <template slot-scope="scope">
             <div class="pl-c-song-name">
@@ -37,8 +38,7 @@
       <song-player-bar 
         :song-presentable="targetSongPresentable"
         :songsList="targetSongsList"
-        @exchange-song="exchangeSong"
-      ></song-player-bar>
+        @exchange-song="exchangeSong"></song-player-bar>
     </div>
     <div class="play-list-bg" :style="{ backgroundImage: `url(${songsMenuPresentable.songsMenuCoverUrl})`}"></div>
     <div class="play-list-mask"></div>
@@ -157,7 +157,6 @@
             this.songsMenuInfo = info.songsMenuInfo = songsMenuInfo
             this.songsMenuPresentable = info
             
-            console.log(songsMenuInfo)
             this.$emit('update:songsMenuListMap', Object.assign(this.songsMenuListMap, {
               [tmpPID]: this.songsMenuPresentable
             }))

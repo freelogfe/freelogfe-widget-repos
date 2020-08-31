@@ -320,7 +320,7 @@ export default {
     },
     async saveChanges() {
       const saveData = this.resolveSaveData()
-      const res = await this.$axios.put('//i18n.testfreelog.com/v1/i18n/trackedRepository/data', saveData).then(res => res.data)
+      const res = await this.$axios.put('//i18n-ts.testfreelog.com/v1/i18nRepository/data', saveData).then(res => res.data)
       if (res.errcode === 0) {
         this.$message.success(`保存成功！`)
         this.changedKeys = []

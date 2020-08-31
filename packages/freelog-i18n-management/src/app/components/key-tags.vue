@@ -1,17 +1,20 @@
 <template>
   <div class="i-nem-edit-key-tags">
-    <el-tag :key="tag" v-for="tag in keyTags" closable :disable-transitions="false" @close="handleClose(tag)">
+      <el-tag :size="size" :key="tag" v-for="tag in tags" closable :disable-transitions="false" @click="selectTag(tag)" @close="handleClose(tag)">
         {{tag}}
       </el-tag>
-      <el-input
-        class="input-new-tag"
-        v-if="inputVisible"
-        v-model="inputValue"
-        ref="saveTagInput"
-        size="small"
-        @keyup.enter.native="handleInputConfirm"
-        @blur="handleInputConfirm"></el-input>
-      <el-button v-else class="button-new-tag" size="small" @click="showInput">+ 新增标签</el-button>
+      <template v-if="addBtnVisible">
+        <el-input
+          class="input-new-tag"
+          v-if="inputVisible"
+          v-model="inputValue"
+          ref="saveTagInput"
+          :size="size"
+          @keyup.enter.native="handleInputConfirm"
+          @blur="handleInputConfirm"></el-input>
+        <el-button v-else class="button-new-tag" :size="size" @click="showInput">+ 新增标签</el-button>
+      </template>
+      
   </div>
 </template>
 
@@ -23,14 +26,23 @@ export default {
   name: 'key-tags',
   components: {  },
   props: {
+    size: {
+      type: String,
+      default: 'small'
+    },
     repositoryName: String,
+    selectedTag: String,
     selectedKeyItem: Object,
-    allKeysInfo: Object,
+    keyInfo: Object,
+    languages: Array,
+    addBtnVisible: {
+      type: Boolean,
+      default: true
+    }
   },
   data() {
     return {
-      keyInfo: null,
-      keyTags: [],
+      tags: [],
       inputValue: '',
       inputVisible: false
     }
@@ -42,33 +54,28 @@ export default {
     keyName() {
       return this.selectedKeyItem != null ? this.selectedKeyItem.key : ''
     },
-  },
-  watch: {
-    selectedKeyItem() {
-      this.getKeyInfo()
-    },
-    keyInfo() {
-      if (this.keyInfo != null) {
-        this.keyTags = this.keyInfo.tags
-      } else {
-        this.keyTags = []
-      }
+    values() {
+      return this.languages.map(lang => {
+        const value = this.selectedKeyItem[lang]
+        return { lang, value }
+      })
     }
   },
-  methods: {
-    getKeyInfo() {
-      if (this.selectedKeyItem != null && this.allKeysInfo != null) {
-        this.keyInfo = objectPath.get(this.allKeysInfo, [ this.moduleName, this.keyName ])
-      }
+  watch: {
+    keyInfo() {
+      this.resolveKeyInfo()
     },
+  },
+  methods: {
     async handleClose(tag) {
-      const index = this.keyTags.indexOf(tag)
-      const tags = this.keyTags.slice()
+      const index = this.tags.indexOf(tag)
+      const tags = this.tags.slice()
       tags.splice(index, 1)
+
       const result = await this.updateKeyInfo(tags)
       if (result.errcode === 0) {
-        this.keyTags.splice(index, 1)
-        this.$message.success('删除tag（${tag}）成功！')
+        this.tags.splice(index, 1)
+        this.$message.success(`删除tag（${tag}）成功！`)
       } else {
         this.$message.error(`删除tag（${tag}）失败: ${result.msg}`)
       }
@@ -83,16 +90,16 @@ export default {
     async handleInputConfirm() {
       let tag = this.inputValue
       if (tag) {
-        if (this.keyTags.indexOf(tag) !== -1) {
+        if (this.tags.indexOf(tag) !== -1) {
           this.$message.error(`tag（${tag}）已存在！`)
           return
         }
-        const tags = this.keyTags.slice()
+        const tags = this.tags.slice()
         tags.push(tag)
         const result = await this.updateKeyInfo(tags)
         if (result.errcode === 0) {
-          this.keyTags.push(tag)
-          this.$message.success('新增tag（${tag}）成功！')
+          this.tags.push(tag)
+          this.$message.success(`新增tag（${tag}）成功！`)
         } else {
           this.$message.error(`新增tag（${tag}）失败: ${result.msg}`)
         }
@@ -100,44 +107,57 @@ export default {
       this.inputVisible = false
       this.inputValue = ''
     },
-    async updateKeyInfo(keyTags) {
-      const result = await window.FreelogApp.QI.fetch('//i18n.testfreelog.com/v1/i18n/trackedRepository/keyInfo', {
-        method: 'PUT',
-        body: {
-          repositoryName: this.repositoryName,
-          moduleName: this.moduleName,
-          key: this.keyName,
-          keyInfo: {
-            tags: keyTags
-          }
-        }
+    async updateKeyInfo(tags) {
+      const postData = {
+        name: this.keyName,
+        moduleName: this.moduleName,
+        repositoryName: this.repositoryName,
+        description: '',
+        tags, 
+        values: this.values
+      }
+     
+      const result = await window.FreelogApp.QI.fetch('//i18n-ts.testfreelog.com/v1/i18nKeyInfos', {
+        method: this.keyInfo != null ? 'PUT' : 'POST',
+        body: postData
       }).then(res => res.json()).catch(e => e)
       if (result instanceof Error) {
         return null
       } else {
         return result
-        
       }
     },
+    selectTag(tag) {
+      this.$emit('update:selectedTag', tag)
+    },
+    resolveKeyInfo() {
+      let tags = []
+      if (this.keyInfo != null) {
+        tags = this.keyInfo.tags
+      } 
+      this.tags = tags
+    }
   },
   async mounted() {
-    this.getKeyInfo()
+    this.resolveKeyInfo()
   },
 }
 </script>
 
-<style lang="less" scoped>
+<style lang="less">
 .i-nem-edit-key-tags {
   margin: 20px 0; 
-  span { line-height: 32px; }
   .el-tag + .el-tag { margin-left: 10px; }
   .button-new-tag {
-    height: 32px; margin-left: 10px; padding-top: 0; padding-bottom: 0;
-    line-height: 30px;
+    height: 24px; margin-left: 10px; padding-top: 0; padding-bottom: 0;
+    line-height: 22px;
   }
   .input-new-tag {
     width: 90px; margin-left: 10px;
     vertical-align: bottom;
+    .el-input__inner {
+      height: 24px; line-height: 24px;
+    }
   }
   
 }

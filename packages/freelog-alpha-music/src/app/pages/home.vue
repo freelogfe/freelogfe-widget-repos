@@ -6,8 +6,8 @@
           <div class="play-song-btn" @click="tapFloatSongBtn">
             <el-progress 
               type="circle" 
-              width="36"
-              stroke-width="2"
+              :width="36"
+              :stroke-width="2"
               :percentage="activeSongPercentage" 
               :show-text="false"></el-progress>
             <img :class="{ 'paused': !isPlayingSong  }" src="http://test-frcdn.oss-cn-shenzhen.aliyuncs.com/console/public/img/resource.jpg" style="object-fit: fill;">

@@ -1,11 +1,15 @@
-
 <script>
-  // window.__auth_info__ = { 
-  //   "__auth_user_id__":50018, 
-  //   "__auth_node_id__":80000057,
-  //   "__auth_node_name__": "Freelog Docs"
-  // } 
+  window.__auth_info__ = { 
+    "__auth_user_id__": 50018, 
+    "__auth_node_id__": 80000057, 
+    "__auth_node_name__": "MD文档", 
+    "__page_build_id": "5db6dac9ab5297001fa15f06", 
+    "__page_build_entity_id": "5db6dac9ab52", 
+    "__page_build_sub_releases": [] 
+  }
 </script>
+
+
 <freelog-widget-docs class="js-wc-widget">
   <style>
     .freelog-widget-docs-app header.nav-bar {
@@ -18,14 +22,12 @@
     .freelog-widget-docs-app .site-name,
     .freelog-widget-docs-app .site-name h2,
     .freelog-widget-docs-app .site-name .f-loading-spinner, 
-    .freelog-widget-docs-app .site-name .sidebar-toggle-btn{
-      display: inline-block;
-    }
+    .freelog-widget-docs-app .site-name .sidebar-toggle-btn{ display: inline-block; }
     
     .freelog-widget-docs-app .docs-menu-btn {
       float: right; cursor: pointer;
-      width: 34px; height: 34px; line-height: 34px; margin-top: 12px; margin-right: 20px;
-      font-size: 20px; text-align: center; 
+      line-height: 34px; margin-top: 12px; margin-right: 20px;
+      font-size: 12px; text-align: center; 
     }
     .freelog-widget-docs-app .docs-menu-btn a{ color: #333; }
     .freelog-widget-docs-app .docs-menu-btn a:hover { color: #409EFF; }
@@ -44,7 +46,7 @@
         <h2>{{docsName || siteName}}</h2>
       </div>
       <div class="docs-menu-btn" :class="{ 'visible': !homePageVisible }" >
-        <a href="#"><i class="el-icon-s-home"></i></a>
+        <a href="#">返回首页</a>
       </div>
     </header> 
   
@@ -87,12 +89,12 @@
         <div class="page-nav" :class="{ 'visible': activeReleaseId !== '' }" v-show="!loadingVisible && activeMdData != null">
           <p class="inner">
             <span class="prev" v-if="prevItem">
-              <i class="el-icon-back"></i>
+              上一页
               <a :href="'#/' + docsName + '/' + prevItem.title" >{{prevItem.title}}</a>
             </span>
             <span class="next" v-if="nextItem">
               <a :href="'#/' + docsName + '/' + nextItem.title" >{{nextItem.title}}</a>
-              <i class="el-icon-right"></i>
+              下一页
             </span>
           </p>
         </div>

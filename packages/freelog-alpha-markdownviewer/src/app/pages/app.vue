@@ -152,7 +152,6 @@ export default {
 }
 </script>
 
-
 <style lang="less" scoped>
   .freelog-alpha-markdownviewer-index {
     .wrapper {

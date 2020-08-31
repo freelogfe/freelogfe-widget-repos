@@ -48,41 +48,48 @@
         @update-repository-changes="updateRepositoryChanges"
         @update-cache-JSONString="updateCacheJSONString"></file-edit-view>
       <namespace-edit-view
-          v-show="targetComponentId === modes[1].id"
+          v-if="targetComponentId === modes[1].id"
           :repository="selectedRepository"
           :allModuleData="allModuleData"
-          :allKeysInfo="allKeysInfo"
           :languages="languages"
           @add-module-success="addModuleSuccess"
           @del-module-success="delModuleSuccess"
           @update-repository-changes="updateRepositoryChanges"
           @update-cache-JSONString="updateCacheJSONString"></namespace-edit-view> 
+      <tags-edit-view
+          v-if="targetComponentId === modes[2].id"
+          :languages="languages"
+          :repository="selectedRepository"
+          :allModuleData="allModuleData"></tags-edit-view>
     </div>
   </div>
 </template>
 
 <script>
 import objectPath from 'object-path'
+import RepositoryPushBtn from '../components/repository-push.vue'
 import FileEditView from './file-edit.vue'
 import NamespaceEditView from './namespace-edit-2.vue'
-import RepositoryPushBtn from '../components/repository-push.vue'
+import TagsEditView from './tags-edit.vue'
+import iMixins from '../mixins.js'
 const cacheJSONString = {}
 export default {
   name: 'i18n-manament-home',
-	components: { FileEditView, NamespaceEditView, RepositoryPushBtn },
+  components: { FileEditView, NamespaceEditView, TagsEditView, RepositoryPushBtn },
+  mixins: [ iMixins ],
   data() {
     return {
       mode: 'namespace-edit',
       modes: [
-        { id: 'FileEditView', mode: 'file-edit', label: '文件编辑模式', icon: 'el-icon-files' }, 
-        { id: 'NamespaceEditView', mode: 'namespace-edit', label: 'Key编辑模式', icon: 'el-icon-edit-outline' }
+        { id: 'FileEditView', mode: 'file-edit', label: '文件编辑模式', icon: 'el-icon-files' },
+        { id: 'NamespaceEditView', mode: 'namespace-edit', label: 'Key编辑模式', icon: 'el-icon-edit-outline' },
+        { id: 'TagsEditView', mode: 'key-tags-edit', label: 'Tags编辑', icon: 'el-icon-edit' }
       ],
       languages: [],
       trackedRepositories: [],
       selectedRepository: null, 
-      selectedReposName: '',
+      selectedReposName: 'freelogfe-web-repos',
       allModuleData: null,
-      allKeysInfo: null,
       selectedReposChanges: [],
       showUpdatePopover: false,
       showEmptyCommitError: false,
@@ -114,6 +121,11 @@ export default {
       return this.selectedRepository != null ? this.selectedRepository.repositoryUrl : ''
     },
   },
+  watch: {
+    selectedReposName() {
+      this.init()
+    }
+  },
   methods: {
     async init() {
       this.loadingVisible = true
@@ -126,34 +138,29 @@ export default {
       }
     },
     async fetchTrackedRepositories() {
-      const res = await window.FreelogApp.QI.fetch('//i18n.testfreelog.com/v1/i18n/trackedRepositories/list').then(res => res.json())
+      const res = await window.FreelogApp.QI.fetch('//i18n-ts.testfreelog.com/v1/trackedRepositories/list').then(res => res.json())
       if(res.errcode === 0 && res.data.length) {
         this.resolveTrackedRepositories(res.data)
-        await this.fetchAllKeysInfo()
-        await this.fetchAllModuleData()
+        await this.fetchAllModuleData(this.selectedReposName)
       }
     },
     resolveTrackedRepositories(data) {
       this.trackedRepositories = data
-      this.selectedRepository = this.trackedRepositories[0]
-      this.selectedReposName = this.selectedRepository.repositoryName
-      this.selectedReposChanges = this.selectedRepository.repositoryChanges
-        this.getLanguages()
-    },
-    async fetchAllKeysInfo() {
-      return window.FreelogApp.QI.fetch(`//i18n.testfreelog.com/v1/i18n/trackedRepository/keyInfo?pathType=0&repositoryName=${this.selectedReposName}`)
-        .then(res => res.json())
-        .then(res => {
-          if (res.errcode === 0) {
-            this.allKeysInfo = res.data
-          } else {
-            throw new Error(res.msg)
+      if (this.selectedReposName !== '') {
+        for (const repository of this.trackedRepositories) {
+          if (repository.repositoryName === this.selectedReposName) {
+            this.selectedRepository = repository
           }
-        })
-        .catch(e => this.$error.showErrorMessage(e))
+        }
+      } else {
+        this.selectedRepository = this.trackedRepositories[0]
+        this.selectedReposName = this.selectedRepository.repositoryName
+      }
+      this.selectedReposChanges = this.selectedRepository.repositoryChanges
+      this.getLanguages()
     },
-    async fetchAllModuleData() {
-      return window.FreelogApp.QI.fetch(`//i18n.testfreelog.com/v1/i18n/trackedRepository/data?pathType=0&repositoryName=${this.selectedReposName}`)
+    async fetchAllModuleData(selectedReposName) {
+      return window.FreelogApp.QI.fetch(`//i18n-ts.testfreelog.com/v1/i18nRepository/allData?repositoryName=${selectedReposName}`)
         .then(res => res.json())
         .then(res => {
           if (res.errcode === 0) {
@@ -178,7 +185,7 @@ export default {
       if (cacheJSONString[path]) {
         return cacheJSONString[path]
       } else {
-        const res = await window.FreelogApp.QI.fetch(`//i18n.testfreelog.com/v1/i18n/trackedRepository/data?targetPath=${encodeURIComponent(path)}&pathType=1&repositoryName=${this.selectedReposName}`).then(res => res.json())
+        const res = await window.FreelogApp.QI.fetch(`//i18n-ts.testfreelog.com/v1/i18nRepository/data?targetPath=${encodeURIComponent(path)}&pathType=1&repositoryName=${this.selectedReposName}`).then(res => res.json())
         if(res.errcode === 0) {
           const targetData = objectPath.get(res.data, keys)
           cacheJSONString[path] = targetData

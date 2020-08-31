@@ -103,7 +103,6 @@ function transformLinesToTree(linesInfo) {
     curNode = lineInfo
     queue.push(lineInfo)
   })
-
   return root
 }
 
