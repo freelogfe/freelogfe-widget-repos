@@ -10,3 +10,5 @@ run/
 .DS_Store
 *.swp
 dist/
+package-lock.json
+packages/**/package-lock.json
