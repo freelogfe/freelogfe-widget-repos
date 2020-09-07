@@ -6,7 +6,7 @@
   "license": "MIT",
   "main": "dist/freelog-widget-document2.js",
   "scripts": {
-    "dev": "freelog-cli-service serve",
+    "dev": "freelog-cli-service serve --internal",
     "build": "freelog-cli-service build",
     "authInfo": "freelog-cli-service authInfo",
     "upload": "freelog-scripts upload",
@@ -20,9 +20,12 @@
     "@babel/plugin-transform-classes": "^7.10.4",
     "@babel/plugin-transform-runtime": "^7.10.5",
     "@babel/preset-env": "^7.10.4",
-    "@freelog/cli-service": "^0.1.7",
-    "@freelog/freelog-scripts": "^0.0.16",
+    "@freelog/cli-service": "^0.1.15",
+    "@freelog/freelog-scripts": "^0.0.18",
     "babel-plugin-component": "^1.1.1",
+    "vue-loader": "^15.9.3",
+    "vue-style-loader": "^4.1.2",
+    "vue-template-compiler": "^2.6.11",
     "webpack-merge": "^5.0.9"
   },
   "dependencies": {

@@ -1,0 +1,70 @@
+<div class="freelog-pagebuild-presentation-app">
+  <!--your codes here-->
+  <header class="f-pb-p__header" v-if="headerVisible">
+    <div class="f-pb-p-site-name">
+      <div class="f-pb-p-spinner">
+        <a href="https://console.freelog.com" target="_blank" class="">F</a>
+      </div>
+      <h2>Page Build Presentation</h2>
+    </div>
+  </header>
+  <main id="f-pb-p__main-content" :class="{ pdTop80: headerVisible }">
+    <div class="f-pb-p-tags-box" v-if="pbTags.length">
+      <el-button type="text" size="small" :class="{'selected': selectedTag.length === 0}" @click="emptySelectedTag">全部</el-button>
+      <el-button
+        size="small"
+        type="text"
+        v-for="tag in pbTags" :key="tag"
+        :class="{'selected': selectedTag.indexOf(tag) !== -1}"
+        @click="tapFilterTag(tag)">{{ tag }}
+      </el-button>
+    </div>
+    <div class="f-pb-p-list">
+      <el-card class="f-pb-p-item" 
+        :body-style="{  }" 
+        v-for="(pb, index) in pbMdList" 
+        :key="'pb' + index" 
+        v-show="targetPbMdList.indexOf(pb.presentableId) > -1"
+        v-loading="pb.isRenderedUsageMdMarkdown === 0"
+        element-loading-spinner="el-icon-loading" 
+      >
+        <el-image class="f-pb-p-img" :src="pb.previewImgUrl" :preview-src-list="pb.previewImages || pb.releaseInfo.previewImages || []" fit="contain"></el-image>
+        <div class="f-pb-p-info">
+          <div class="f-pb-p-i-name">{{pb.presentableName}}</div>
+          <div class="f-pb-p-i-tags">
+            <el-tag v-for="tag in pb.userDefinedTags" :key="tag" type="s" effect="plain" size="small">
+              {{ tag }}
+            </el-tag>
+          </div>
+          <div class="f-pb-i-intro">
+            {{pb.releaseInfo && pb.releaseInfo.intro !== '' ? pb.releaseInfo.intro : '暂无详细描述...'}}
+          </div>
+          <div class="f-pb-p-i-btn-group">
+            <!-- <el-button class="i-m-nem-key-copy" type="primary" size="mini" round>复制节点地址</el-button> -->
+            <div class="f-pb-p-i-demo-btn" :class="{'disabled': !pb.demoSite}" >
+              <a :href="pb.demoSite" target="_blank"><i class="el-icon-caret-right"></i>Demo预览</a>
+            </div>
+          </div>
+          
+          <div class="f-pb-p-i-footer">
+            <el-button type="text" size="mini" class="f-pb-p-i-auth-btn" v-if="pb.pbReleaseDetailPageUrl">
+              <a :href="pb.pbReleaseDetailPageUrl" target="_blank">马上使用该主题</a>
+            </el-button>
+            <div class="f-pb-p-usage-btn"
+              @click="tapViewUsageBtn(index)">
+              {{pb.mdBoxVisible ? '收起' : '查看使用方法'}} 
+              <i class="el-icon-caret-bottom" :class="{'rotate180': pb.mdBoxVisible}"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="f-pb-p-usage">
+          <div class="f-pb-p-usage-content" :class="{'visible': pb.mdBoxVisible}" :style="{ height: pb.usageMdBoxheight }">
+            <div class="f-pb-p-u-md-box" :ref="pb.pbMdBoxRef"></div>
+          </div>
+        </div>
+      </el-card>
+    </div>
+    <el-backtop></el-backtop>
+  </main>
+</div>

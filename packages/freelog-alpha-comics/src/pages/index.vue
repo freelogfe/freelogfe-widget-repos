@@ -79,8 +79,8 @@
   
         chaptersInfoPresentable: null,
         chaptersInfoArr: null,
-        loadedChaptersInfoCount: 1,
-        activeChaptersListIndex: 1,
+        loadedChaptersInfoCount: 0,
+        activeChaptersListIndex: 0,
         chaptersList: [],
         chapterPresentableMap: {}, 
 
