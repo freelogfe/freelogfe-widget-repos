@@ -1,42 +1,21 @@
-# freelog-alpha-video
+## freelog-alpha-video
 
-> video widget for freelog
+This project was bootstrapped with [@freelog/freelog-cli](https://github.com/freelogfe/freelogfe-lib-repos/tree/master/packages/%40freelog/cli).
 
-## Build Setup
+### Available Scripts
 
-``` bash
-# install dependencies
-npm install
+In the project directory, you can run:
 
-# serve at localhost:9001
-npm run dev
+#### `npm run dev`
 
-# build for production with minification
-npm run build
-```
+Runs the app in the development mode.<br />
+Open [http://localhost:9180](http://localhost:9180) to view it in the browser.
 
+The page will reload if you make edits.<br />
+You will also see any lint errors in the console.
 
-## 使用
+#### `npm run build`
 
-### resource数据
+Builds the app for production to the `build` folder.<br />
+Your app is ready to be deployed!
 
-#### meta定义
-
-- title: 视频标题
-- duration: 视频时长，单位秒
-- poster: 对应的视频封面图资源Id，图比例16:9
-
-例如
-```json
-{
-  "profile": {
-    "title": "小明砸锅",
-    "duration": "126",
-    "poster": "1sdsasdf8sdfjakd"
-  }
-}
-```
-
-
-## config
-package.json中freelogConfig字段可配置freelog资源相关的配置数据。

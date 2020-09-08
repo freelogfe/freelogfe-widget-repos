@@ -1,55 +1,21 @@
-# freelog-alpha-blog
+## freelog-alpha-blog
 
-> A freelog widget
+This project was bootstrapped with [@freelog/freelog-cli](https://github.com/freelogfe/freelogfe-lib-repos/tree/master/packages/%40freelog/cli).
 
-## Build Setup
+### Available Scripts
 
-``` bash
-# install dependencies
-npm install
+In the project directory, you can run:
 
-# serve at localhost:9001
-npm run dev
+#### `npm run dev`
 
-# build for production with minification
-npm run build
-```
+Runs the app in the development mode.<br />
+Open [http://localhost:9180](http://localhost:9180) to view it in the browser.
 
+The page will reload if you make edits.<br />
+You will also see any lint errors in the console.
 
-## config
-package.json中freelogConfig字段可配置freelog资源相关的配置数据。
+#### `npm run build`
 
+Builds the app for production to the `build` folder.<br />
+Your app is ready to be deployed!
 
-
-## usage
-
-### blog-config
-* type: json
-* tags: 'blog-config'
-* 例如
-
-```json
-{
-  "blogTitle": "博客页面标题",
-  "avatar": "博主头像资源ID",
-  "postImage": "博客导航封面图资源ID",
-  "blogDesc": "博客介绍"
-}
-```
-
-
-### aboutme
-* type： md
-* tags： 'aboutme'
-
-
-### article
-* type: md
-* tags: article & meta.tags
-* meta
-
-```json
-{
-  "tags": ["aaa", "bbb"]
-}
-```

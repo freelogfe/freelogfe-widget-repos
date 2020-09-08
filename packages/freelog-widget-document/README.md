@@ -1,47 +1,25 @@
-# webpack-build
+## freelog-widget-document
 
-### 启动项目
+This project was bootstrapped with [@freelog/freelog-cli](https://github.com/freelogfe/freelogfe-lib-repos/tree/master/packages/%40freelog/cli).
 
-* 安装依赖
+### Available Scripts
 
-```sh
-npm install
-```
+In the project directory, you can run:
 
-* 运行项目
+#### `npm run dev`
 
-```sh
-npm start
-```
+Runs the app in the development mode.<br />
+Open [http://localhost:9180](http://localhost:9180) to view it in the browser.
 
-* 打包项目
+The page will reload if you make edits.<br />
+You will also see any lint errors in the console.
 
-```sh
-npm run build
-```
-<!--
-### 目录结构
+#### `npm run build`
 
-```
-/webpack-build
-|- README.md
-|- package.json
-|- package-lock.json
-|- /public
-   |- index.html
-|- /src
-   |- index.js
-   |- index.less
-   |- /component1
-      |- component1.js
-      |- math.js
-   |- /component2
-      |- component2.js
-      |- print.js
-   |- /component3
-      |- component3.js
-      |- data.xml
-      |- glyphicons-halflings-regular.woff
-      |- glyphicons-halflings-regular.woff2
-      |- icon.jpg
-```-->
+Builds the app for production to the `build` folder.<br />
+Your app is ready to be deployed!
+
+
+
+
+
