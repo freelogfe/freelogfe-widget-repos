@@ -1,4 +1,4 @@
-## freelog-pagebuild-presentation
+## freelog-single-jsnes
 
 This project was bootstrapped with [@freelog/freelog-cli](https://github.com/freelogfe/freelogfe-lib-repos/tree/master/packages/%40freelog/cli).
 
