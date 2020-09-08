@@ -14,7 +14,7 @@
           <template slot-scope="scope">
             <div class="pl-c-song-name">
               {{scope.row.songInfo.songName}}
-              <img class="pl-c-song-wave" src="../images/wave.gif" alt="" v-show="targetSongPresentable && targetSongPresentable.presentableId === scope.row.presentableId && scope.row.isPlaying">
+              <img class="pl-c-song-wave" :src="waveGif" alt="" v-show="targetSongPresentable && targetSongPresentable.presentableId === scope.row.presentableId && scope.row.isPlaying">
               <div class="pl-c-song-play-btn" :class="{ 'paused': !(targetSongPresentable && targetSongPresentable.presentableId === scope.row.presentableId && scope.row.isPlaying) }" @click="tapPlaySongBtn(scope.row)"></div>
               <div class="pl-c-song-lock" v-if="!scope.row.authResult.isAuth">
                 <i class="el-icon-lock"></i>
@@ -40,13 +40,13 @@
         :songsList="targetSongsList"
         @exchange-song="exchangeSong"></song-player-bar>
     </div>
-    <div class="play-list-bg" :style="{ backgroundImage: `url(${songsMenuPresentable.songsMenuCoverUrl})`}"></div>
+    <div class="play-list-bg" :style="{ backgroundImage: `url(${songsMenuCoverUrl})`}"></div>
     <div class="play-list-mask"></div>
   </div>
 </template>
 
 <script>
-
+  import waveGif from '../images/wave.gif'
   import { loadPresentableInfo, loadPresentablesList, loadPresentableResourceData, batchLoadPresentablesList, MENU_TAGS } from '../data-loader'
   import SongItem from '../components/song-item.vue'
   import SongPlayerBar from '../components/player-bar.vue'
@@ -61,6 +61,7 @@
     },
     data() {
       return {
+        waveGif,
         songsMenuPresentable: null,
         songsMenuInfo: null,
         targetSongsList: [],
@@ -85,6 +86,19 @@
       },
       $audio() {
         return this.$parent.$refs['audio']
+      },
+      songsMenuCoverUrl() {
+        const p = this.songsMenuPresentable
+        let url = 'http://test-frcdn.oss-cn-shenzhen.aliyuncs.com/console/public/img/resource.jpg'
+        if (p != null) {
+          const { previewImages, releaseInfo } = p
+          if(previewImages && previewImages[0]) {
+            url = previewImages[0]
+          } else if (releaseInfo.previewImages && releaseInfo.previewImages[0]) {
+            url = releaseInfo.previewImages[0]
+          }
+        }
+        return url
       }
     },
     watch: {
