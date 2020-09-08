@@ -87,12 +87,17 @@ export default {
     authHandler() {
       this.close()
       var self = this
-      window.FreelogApp.trigger('HANDLE_INVALID_RESPONSE', { response: this.authResult }, function (data){
-        if(data == null) return 
-        if(typeof this.afterRsolvedAuth === 'function') {
-          this.afterRsolvedAuth(data)
+      const presentableInfo = this.authResult.data.presentableInfo
+      window.FreelogApp.trigger(
+        'SHOW_AUTH_DIALOG',
+        presentableInfo,
+        function(data) {
+          if(data == null) return 
+          if(typeof this.afterRsolvedAuth === 'function') {
+            this.afterRsolvedAuth(data)
+          }
         }
-      })
+      )
     },
     handleAfterLeave() {
       this.$destroy(true)
