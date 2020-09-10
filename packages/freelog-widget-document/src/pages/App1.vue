@@ -23,7 +23,7 @@
 
 		<div class="docs-list-page" v-if="homePageVisible">
 			<div class="docs" v-for="docs in docsList" :key="docs.presentableName">
-				<a :href="'#/' + docs.presentableName">
+				<a :href="'#/' + docs.presentableName + '/'">
 					<img :src="docs.previewUrl" class="image">
 					<div style="padding: 14px;">
 						<span>{{docs.presentableName}}</span>
@@ -360,7 +360,6 @@ export default {
 					const regE = new RegExp(p.presentableName)
 					return regE.test(hash)
 				})
-
 				if(arr.length) {
 					this.activeDocsPresentableId = arr[0].presentableId
 					this.docsName = arr[0].presentableName
@@ -379,11 +378,11 @@ export default {
 			if(this.docsName === '' || this.catalogList.length === 0) return 
 			const regE = new RegExp(`#/${this.docsName}/`, 'i')
 			var _title = decodeURIComponent(window.location.hash).replace(regE, '')
-			
 			if(this.catalogMap[_title]) {
 				this.activeCatalogId = this.catalogMap[_title].id
 			}else {
 				const { id, title } = this.catalogList[0]
+				console.log('getActiveMdPage -', id, title)
 				this.activeCatalogId = id
 				_title = title
 				window.location.hash = `/${this.docsName}/${_title}`

@@ -28,6 +28,5 @@ const router = new VueRouter({
 var app = new Vue({
   el: '#freelog-i18n-management-app',
   router,
-  template: '<App/>',
-  components: {App}
+  render: (h) => h(App)
 })

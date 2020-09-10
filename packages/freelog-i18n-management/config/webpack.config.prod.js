@@ -1,11 +1,11 @@
 var webpack = require('webpack')
-var merge = require('webpack-merge')
+var { merge } = require('webpack-merge')
 
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const TerserPlugin = require('terser-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin")
-
-const baseConfig = require('./webpack.base.conf')
+const baseConfig = require('./webpack.config')
 
 module.exports = merge(baseConfig, {
   mode: 'production',
@@ -13,29 +13,6 @@ module.exports = merge(baseConfig, {
   performance: {
     hints: false
   },
-
-  module: {
-    rules: [
-      /* config.module.rule('css') */
-      {
-        test: /\.css$/,
-        use: [
-          'style-loader',
-          'css-loader',
-        ]
-      },
-      /* config.module.rule('less') */
-      {
-        test: /\.less$/,
-        use: [
-          'style-loader',
-          'css-loader',
-          'less-loader',
-        ]
-      },
-    ]
-  },
-
   optimization: {
     concatenateModules: true,
     nodeEnv: 'production',
@@ -44,8 +21,13 @@ module.exports = merge(baseConfig, {
       new OptimizeCSSAssetsPlugin({})
     ],
   },
-
   plugins: [
+    new CleanWebpackPlugin(),
+    new webpack.DefinePlugin({
+      'process.env': {
+        'NODE_ENV': JSON.stringify('production'),
+      },
+    }),
     new MiniCssExtractPlugin({
       filename: "[name].css",
       chunkFilename: "[id].css"

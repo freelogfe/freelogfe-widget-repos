@@ -1,19 +1,18 @@
 <template>
   <div>
     <li class="sidebar-item">
-      <a  
+      <router-link 
         class="sidebar-link"
         v-if="sidebarData.id"
-        :href="'#/' + docsName + '/' + sidebarData.title" 
-        :class="{ 'active': activeCatalogId === sidebarData.id }"
-        @click="tapSidebarItem(sidebarData)">{{sidebarData.title}}</a>
+        :class="{ 'active': docsMDPageTitle === sidebarData.title }"
+        :to="{ path: targetPath }">
+        {{sidebarData.title}}
+      </router-link>
       <p class="sidebar-title" v-else><span>{{sidebarData.title}}</span></p>
       <ul class="sub-list" v-if="sidebarData.children">
         <sidebar-item 
           v-for="(subItem, subIndex) in sidebarData.children" 
-          :docs-name="docsName"
           :key="'sub-item-'+(subIndex+1)" 
-          :activeCatalogId="activeCatalogId"
           :sidebarData="subItem"></sidebar-item>
       </ul>
     </li>
@@ -24,12 +23,30 @@
 export default {
   name: 'sidebar-item',
   props: {
-    docsName: String,
     activeCatalogId: String,
     sidebarData: Object
   },
+  data() {
+    return {
+    }
+  },
+  computed: {
+    docsName() {
+      return this.$route.params.docsName
+    },
+    docsPresentableId() {
+      return this.$route.params.presentableId
+    },
+    docsMDPageTitle() {
+      return this.$route.params.contentTitle || ''
+    },
+    targetPath() {
+      return `/${this.docsPresentableId}/${this.docsName}/${this.sidebarData.title}`
+    },
+  },
   methods: {
-    tapSidebarItem(data) {}
+  },
+  mounted() {
   },
 }
 </script>
