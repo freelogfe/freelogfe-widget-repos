@@ -32,8 +32,9 @@ export default {
     }
   },
   methods: {
-		addTouchEventListener() {
-			if(!this.isMobileClient) return
+		async addTouchEventListener() {
+      if(!this.isMobileClient) return
+      await new Promise(resolve => this.$nextTick(resolve))
 			const $app = document.querySelector('.freelog-widget-docs-app')
 			var sPageX, ePageX
 			$app.addEventListener('touchstart', (e) => {
