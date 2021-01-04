@@ -183,6 +183,7 @@
     }
 
     function getData(page = 1) {
+        console.warn("request begin")
         return new Promise(((resolve, reject) => {
             FreelogApp.QI.pagingGetPresentables({
                 page,

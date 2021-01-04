@@ -12,7 +12,6 @@
           :showPlay="index === activeIndex"
           @play="activeIndex = index"
           @stop="activeIndex = -1"
-          :key="index"
           @prev="activeIndex--"
           @next="activeIndex++"
           :disabledPrev="index === 0"

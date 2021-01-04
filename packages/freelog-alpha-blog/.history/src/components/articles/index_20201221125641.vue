@@ -27,7 +27,7 @@
 
 <script>
   import moment from 'moment'
-  import Tags from '../tags/index.vue'
+  import Tags from '../tags/index'
   export default {
     name: 'article-list',
     data() {

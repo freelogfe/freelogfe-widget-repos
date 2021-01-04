@@ -45,6 +45,7 @@
         },
         data() {
             return {
+                reqCount: 0,
                 page: 0, // 当前加载到的页面
                 bufferList: [], // 数据暂存区
                 columns: Math.floor(window.innerWidth / 250), // 瀑布流的列数
@@ -88,6 +89,7 @@
         },
         methods: {
             init() {
+                console.warn('init begining')
                 this.dataSource = Array(this.columns).fill(null).map(() => []);
                 setTimeout(() => {
                     this.fillBufferList();
@@ -105,7 +107,8 @@
              * 数据获取的后的缓存区
              */
             fillBufferList() {
-                if (this.loading === 1 || this.loading === 2) {
+                this.reqCount++ 
+                if (this.loading === 1 || this.loading === 2 ||  this.reqCount > 5) {
                     return;
                 }
                 this.page++;
@@ -183,6 +186,7 @@
     }
 
     function getData(page = 1) {
+        console.warn("request begin")
         return new Promise(((resolve, reject) => {
             FreelogApp.QI.pagingGetPresentables({
                 page,

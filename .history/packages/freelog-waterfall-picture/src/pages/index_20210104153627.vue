@@ -88,6 +88,7 @@
         },
         methods: {
             init() {
+                console.warn('init begining')
                 this.dataSource = Array(this.columns).fill(null).map(() => []);
                 setTimeout(() => {
                     this.fillBufferList();
@@ -183,6 +184,7 @@
     }
 
     function getData(page = 1) {
+        console.warn("request begin")
         return new Promise(((resolve, reject) => {
             FreelogApp.QI.pagingGetPresentables({
                 page,

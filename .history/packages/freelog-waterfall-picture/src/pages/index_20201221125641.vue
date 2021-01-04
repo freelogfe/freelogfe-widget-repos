@@ -4,14 +4,12 @@
       <div
         v-for="(item, index) in Array(columns)"
         :ref="'ref' + index"
-        :key="index"
         class="water-picture-container__column"
       >
         <Card
           v-for="i in dataSource[index]"
           :title="i.title"
           :src="i.src"
-          :key="i"
           @onload="pushData"
           @preview="openLightBox(i.title)"
         />

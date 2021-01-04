@@ -1,7 +1,7 @@
 import './index.less'
 import 'highlight.js/styles/github.css'
 import Vue from 'vue'
-import App from './pages/app.vue'
+import App from './pages/app'
 import VueRouter from 'vue-router'
 import Layout from './pages/layout/index.vue'
 import Archives from './pages/archives/index.vue'
