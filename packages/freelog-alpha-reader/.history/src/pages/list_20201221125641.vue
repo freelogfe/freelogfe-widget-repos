@@ -10,7 +10,7 @@
           <span  v-if="bookDetail.authorName">{{bookDetail.authorName}} 著</span>
         </h1>
         <p class="tag">
-          <span class="blue" v-for="tag in bookDetail.tags" :key="tag">{{tag}}</span>
+          <span class="blue" v-for="tag in bookDetail.tags">{{tag}}</span>
         </p>
         <p class="intro">{{bookDetail.intro}}</p>
       </div>

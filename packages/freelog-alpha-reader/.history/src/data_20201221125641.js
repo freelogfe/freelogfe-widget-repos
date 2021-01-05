@@ -98,7 +98,7 @@ function requestPresentableData(presentableId) {
   var nodeId = window.__auth_info__.__auth_node_id__
   return window.FreelogApp.QI.getPresentableData(presentableId)
     .then(res => {
-      var meta = decodeURIComponent(res.headers.get('freelog-resource-property'))
+      var meta = decodeURIComponent(res.headers.get('freelog-meta'))
       var chapter
       try {
         chapter = JSON.parse(meta)
