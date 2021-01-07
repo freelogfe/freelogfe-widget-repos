@@ -24,7 +24,7 @@ function createLoader(loader) {
 
 var nodeId = window.__auth_info__.__auth_node_id__
 
-function handleErrorResponse(response) {
+function handleErrorResponse(response){
   window.FreelogApp.trigger('HANDLE_INVALID_RESPONSE', { response })
 }
 
@@ -99,19 +99,20 @@ function requestPresentableData(presentableId) {
   return window.FreelogApp.QI.getPresentableData(presentableId)
     .then(res => {
       var meta = decodeURIComponent(res.headers.get('freelog-resource-property'))
+      console.log(res,res.headers, meta)
       var chapter
       try {
         chapter = JSON.parse(meta)
+        console.log(chapter)
       } catch (e) {
         chapter = null
-        console.error(e)
+        console.error('chapter error', e)
       }
       if (!chapter) {
-        return res.blob().then(errResponse => {
-          let a = window.FreelogApp.QI.getPresentable(presentableId)
+        return res.json().then(errResponse => {
           return window.FreelogApp.QI.getPresentable(presentableId)
             .then(res => {
-              chapter = res.data && res.data.versionProperty || {
+              chapter = res.data.versionProperty || {
                 "chapterName": "第一章 秦羽",
                 "volume": 1,
                 "chapter": 1,
@@ -120,17 +121,17 @@ function requestPresentableData(presentableId) {
               chapter.presentableId = presentableId
               chapter.error = errResponse
               return chapter
-            }).catch((e)=>{
-              console.error(e)
             })
         })
       } else {
+        console.log()
         return res.text().then(content => {
           content = content.split('\n')
             .filter(cont => cont !== '')
             .map(cont => `<p style="text-indent: 2em;">${cont}</p><br/>`)
             .join('')
           chapter.content = `<div>${content}</div>`
+          console.log(chapter)
           return chapter
         })
       }
@@ -140,7 +141,7 @@ function requestPresentableData(presentableId) {
 var presentablesMap = {}
 
 function onloadPresentableData(presentableId, disabledCache) {
-
+  
   if (!disabledCache && presentablesMap[presentableId]) {
     return Promise.resolve(presentablesMap[presentableId])
   } else {

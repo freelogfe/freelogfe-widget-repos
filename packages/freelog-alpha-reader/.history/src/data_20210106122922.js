@@ -24,7 +24,7 @@ function createLoader(loader) {
 
 var nodeId = window.__auth_info__.__auth_node_id__
 
-function handleErrorResponse(response) {
+function handleErrorResponse(response){
   window.FreelogApp.trigger('HANDLE_INVALID_RESPONSE', { response })
 }
 
@@ -57,7 +57,7 @@ function resolveChapters(chapters) {
   var bookVolumes = []
 
   chapters.forEach(chapter => {
-    var volume = chapter.versionProperty.volume
+    var volume = chapter.resourceInfo.meta.volume
     if (volume) {
       if (!bookVolumesMap[volume]) {
         bookVolumesMap[volume] = []
@@ -69,11 +69,11 @@ function resolveChapters(chapters) {
   Object.keys(bookVolumesMap).forEach(volume => {
     var chapterList = bookVolumesMap[volume];
     chapterList.sort(function (a, b) {
-      return a.versionProperty.chapter > b.versionProperty.chapter
+      return a.resourceInfo.meta.chapter > b.resourceInfo.meta.chapter
     })
 
     bookVolumes.push({
-      volumeName: chapterList[0].versionProperty.volumeName,
+      volumeName: chapterList[0].resourceInfo.meta.volumeName,
       volumeIndex: volume,
       chapters: chapterList
     })
@@ -104,14 +104,12 @@ function requestPresentableData(presentableId) {
         chapter = JSON.parse(meta)
       } catch (e) {
         chapter = null
-        console.error(e)
       }
       if (!chapter) {
-        return res.blob().then(errResponse => {
-          let a = window.FreelogApp.QI.getPresentable(presentableId)
+        return res.json().then(errResponse => {
           return window.FreelogApp.QI.getPresentable(presentableId)
             .then(res => {
-              chapter = res.data && res.data.versionProperty || {
+              chapter = res.data.versionProperty || {
                 "chapterName": "第一章 秦羽",
                 "volume": 1,
                 "chapter": 1,
@@ -120,8 +118,6 @@ function requestPresentableData(presentableId) {
               chapter.presentableId = presentableId
               chapter.error = errResponse
               return chapter
-            }).catch((e)=>{
-              console.error(e)
             })
         })
       } else {
@@ -131,6 +127,7 @@ function requestPresentableData(presentableId) {
             .map(cont => `<p style="text-indent: 2em;">${cont}</p><br/>`)
             .join('')
           chapter.content = `<div>${content}</div>`
+
           return chapter
         })
       }
@@ -140,7 +137,7 @@ function requestPresentableData(presentableId) {
 var presentablesMap = {}
 
 function onloadPresentableData(presentableId, disabledCache) {
-
+  
   if (!disabledCache && presentablesMap[presentableId]) {
     return Promise.resolve(presentablesMap[presentableId])
   } else {

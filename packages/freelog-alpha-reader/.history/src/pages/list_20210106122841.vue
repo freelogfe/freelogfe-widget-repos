@@ -86,7 +86,6 @@
       onloadChapters((volumes) => {
         var promises = []
         volumes.forEach(v => {
-          console.log(v.chapters)
           v.chapters.forEach(c => {
             c._detail = {}
             var promise = onloadChapterContent(c.presentableId)

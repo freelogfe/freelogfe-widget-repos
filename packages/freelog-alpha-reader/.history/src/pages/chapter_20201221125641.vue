@@ -95,7 +95,7 @@
                         :class="{on: chapter._id===readProcess._id}"
                         v-for="(chapter,index) in volume.chapters" :key="'chapter-' + index">
                         <a href="javascript:;" @click="gotoChapterHandler(volume, chapter)">
-                          第{{chapter.versionProperty.chapter}}章 {{chapter.versionProperty.chapterName}}
+                          第{{chapter.resourceInfo.meta.chapter}}章 {{chapter.resourceInfo.meta.chapterName}}
                           <i class="lock-chapter" v-if="chapter._detail && chapter._detail.error"></i>
                         </a>
                       </li>
@@ -186,10 +186,8 @@
         this.loadingChapter = true
         onloadChapterContent(presentableId, disabledCache)
           .then(chapter => {
-            console.log(chapter)
             if (chapter.error) {
-              console.log(chapter.error)
-              // chapter.errorInfo = window.FreelogApp.getErrorInfo(chapter.error);
+              chapter.errorInfo = window.FreelogApp.getErrorInfo(chapter.error);
             }
 
             var findChapterIndex = this.chapters.findIndex(chapter => {
@@ -201,9 +199,7 @@
               this.chapters.push(chapter)
             }
           })
-          .catch((err) => {
-            console.error(err ,4234234)
-          })
+          .catch((err) => {})
           .finally(() => {
             this.loadingChapter = false
           })
@@ -214,7 +210,7 @@
           volumes.forEach(volume => {
             volume.show = (readProcess.volumeIndex == volume.volumeIndex);
             volume.chapters.forEach(chapter => {
-              chapter._id = `${volume.volumeIndex}_${chapter.versionProperty.chapter}`
+              chapter._id = `${volume.volumeIndex}_${chapter.resourceInfo.meta.chapter}`
             })
           });
 
@@ -238,7 +234,7 @@
           var nextChapter
           if (volume && volume.chapters.length >= nextChapterIndex) {
             nextChapter = volume.chapters.find((c) => {
-              if (c.versionProperty.chapter == nextChapterIndex) {
+              if (c.resourceInfo.meta.chapter == nextChapterIndex) {
                 return c;
               }
             });
@@ -305,7 +301,7 @@
       gotoChapterHandler(volume, chapter) {
         this.hideToolBar()
         this.$router.push({
-          path: `/volume/${volume.volumeIndex}/chapter/${chapter.versionProperty.chapter}`,
+          path: `/volume/${volume.volumeIndex}/chapter/${chapter.resourceInfo.meta.chapter}`,
           query: {
             chapterId: chapter.presentableId
           }

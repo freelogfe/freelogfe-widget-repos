@@ -99,44 +99,62 @@ function requestPresentableData(presentableId) {
   return window.FreelogApp.QI.getPresentableData(presentableId)
     .then(res => {
       var meta = decodeURIComponent(res.headers.get('freelog-resource-property'))
+      console.log( res.headers,res.headers.get('freelog-resource-property'), presentableId, meta)
       var chapter
       try {
         chapter = JSON.parse(meta)
+        console.log(chapter)
       } catch (e) {
         chapter = null
-        console.error(e)
+        console.error('chapter error', e)
       }
       if (!chapter) {
+        console.log("chapter is empty")
         return res.blob().then(errResponse => {
           let a = window.FreelogApp.QI.getPresentable(presentableId)
+          console.log(a)
           return window.FreelogApp.QI.getPresentable(presentableId)
             .then(res => {
+              console.log("chapter is empty1")
               chapter = res.data && res.data.versionProperty || {
                 "chapterName": "第一章 秦羽",
                 "volume": 1,
                 "chapter": 1,
                 "volumeName": "秦羽"
               }
+              console.log("chapter is empty2")
               chapter.presentableId = presentableId
               chapter.error = errResponse
               return chapter
             }).catch((e)=>{
-              console.error(e)
+              console.log(e)
             })
         })
       } else {
+        console.log('content')
         return res.text().then(content => {
           content = content.split('\n')
             .filter(cont => cont !== '')
             .map(cont => `<p style="text-indent: 2em;">${cont}</p><br/>`)
             .join('')
           chapter.content = `<div>${content}</div>`
+          console.log(chapter)
           return chapter
         })
       }
     })
 }
-
+function binaryToStr(str){
+  var result = [];
+  var list = str.split(" ");
+  for(var i=0;i<list.length;i++){
+       var item = list[i];
+       var asciiCode = parseInt(item,2);
+       var charValue = String.fromCharCode(asciiCode);
+       result.push(charValue);
+  }
+  return result.join("");
+}
 var presentablesMap = {}
 
 function onloadPresentableData(presentableId, disabledCache) {

@@ -186,10 +186,8 @@
         this.loadingChapter = true
         onloadChapterContent(presentableId, disabledCache)
           .then(chapter => {
-            console.log(chapter)
             if (chapter.error) {
-              console.log(chapter.error)
-              // chapter.errorInfo = window.FreelogApp.getErrorInfo(chapter.error);
+              chapter.errorInfo = window.FreelogApp.getErrorInfo(chapter.error);
             }
 
             var findChapterIndex = this.chapters.findIndex(chapter => {
@@ -202,7 +200,7 @@
             }
           })
           .catch((err) => {
-            console.error(err ,4234234)
+            console.error(err)
           })
           .finally(() => {
             this.loadingChapter = false

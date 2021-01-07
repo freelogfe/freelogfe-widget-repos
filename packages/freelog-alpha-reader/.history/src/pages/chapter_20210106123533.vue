@@ -189,7 +189,7 @@
             console.log(chapter)
             if (chapter.error) {
               console.log(chapter.error)
-              // chapter.errorInfo = window.FreelogApp.getErrorInfo(chapter.error);
+              chapter.errorInfo = window.FreelogApp.getErrorInfo(chapter.error);
             }
 
             var findChapterIndex = this.chapters.findIndex(chapter => {
