@@ -61,7 +61,7 @@ export default class MarkdownParser extends HTMLElement {
 			var response = await window.FreelogApp.QI.getPresentableData(presentableId)
 			
 			if (response.headers.get('freelog-resource-type') != null) {
-				const subDependenciesString = decodeURIComponent(response.headers.get('freelog-sub-dependencies'))
+				const subDependenciesString = Buffer.from(response.headers.get('freelog-sub-dependencies'),'base64').toString('utf-8')
 				const subDependencies = JSON.parse(subDependenciesString)
 				const entityNid = response.headers.get('freelog-entity-nid')
 				const markdownText = await response.text()
