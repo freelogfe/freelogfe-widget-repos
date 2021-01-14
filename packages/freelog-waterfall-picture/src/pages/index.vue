@@ -11,7 +11,7 @@
           v-for="i in dataSource[index]"
           :title="i.title"
           :src="i.src"
-          :key="i"
+          :key="i.index"
           @onload="pushData"
           @preview="openLightBox(i.title)"
         />
@@ -183,19 +183,21 @@
     }
 
     function getData(page = 1) {
+        let pageSize = 10
         return new Promise(((resolve, reject) => {
             FreelogApp.QI.pagingGetPresentables({
-                page,
-                pageSize: 10,
+                skip: (page - 1) * pageSize,
+                limit: pageSize,
                 resourceType: 'image',
             }).then(res => {
                     resolve({
-                            dataList: res.data.dataList.map((i) => ({
+                            dataList: res.data.dataList.map((i,index) => ({
                                 title: i.releaseInfo && i.releaseInfo.releaseName || '',
-                                src: window.FreelogApp.QI.resolvePresentableDataUrl(i.presentableId)
+                                src: window.FreelogApp.QI.resolvePresentableDataUrl(i.presentableId),
+                                index
                                 // resourceID: i.resourceId,
                             })),
-                            done: res.data.page * res.data.pageSize > res.data.totalItem,
+                            done: page * pageSize > res.data.totalItem,
                         }
                     );
             })
