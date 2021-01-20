@@ -6,7 +6,7 @@ export default {
         var subReleasesText = resp.headers.get('freelog-sub-dependencies')
         const entityNid = resp.headers.get('freelog-entity-nid')
 				try {
-					let subReleases = decodeURIComponent(subReleasesText)
+					let subReleases = Buffer.from(subReleasesText,'base64').toString('utf-8')
 					subReleases = JSON.parse(subReleases) 
 				}catch(e) {
 					console.error(e)

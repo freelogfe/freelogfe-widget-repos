@@ -54,8 +54,8 @@ export default {
 					item.previewUrl = 'http://test-frcdn.oss-cn-shenzhen.aliyuncs.com/console/public/img/resource.jpg'
 					if (coverImages && coverImages[0]) {
 						item.previewUrl = coverImages[0]
-					} else if(resourceInfo.coverImages && resourceInfo.coverImages[0]) {
-						item.previewUrl = resourceInfo.coverImages && resourceInfo.coverImages[0]
+					} else if(resourceInfo && resourceInfo.coverImages[0]) {
+						item.previewUrl = resourceInfo && resourceInfo.coverImages[0]
 					}
 					return item 
 				})

@@ -11,12 +11,14 @@ export default {
 				}catch(e) {
 					console.error(e)
 				}
-				return isError ? resp.json() : resp.text()
+				return isError ? resp.json() : resp.blob()
 			})
 		},
   },
   loadPresentableDataByName(resourceName) {
-    return window.FreelogApp.QI.fetch(`/v2/auths/presentables/nodes/${this.nodeId}/${resourceName}/fileStream`)
+	//  window.__auth_info__.__auth_node_id__
+	window.FreelogApp.QI.getPresentableData(presentableId)
+    return window.FreelogApp.QI.fetch(`/v2/presentables/detail?nodeId=${this.nodeId}&resourceName=${resourceName}`)
       .then(resp => {
         return !resp.headers.get('freelog-resource-type') ? resp.json() : resp.blob()
       })

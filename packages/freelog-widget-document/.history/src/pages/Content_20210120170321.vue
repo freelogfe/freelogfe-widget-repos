@@ -148,14 +148,13 @@ export default {
       if (this.mdPagePresentableMap[resourceName]) {
         return Promise.resolve(this.mdPagePresentableMap[resourceName])
       } else {
-        let err = false
-        return window.FreelogApp.QI.fetch(`/v2/auths/presentables/nodes/${this.nodeId}/${resourceName}/fileStream`)
-          .then(resp => {err = !resp.headers.get('freelog-resource-type'); return resp.blob()})
+        return window.FreelogApp.QI.fetch(`/v2/presentables/detail?nodeId=${this.nodeId}&resourceName=${resourceName}`)
+          .then(resp => resp.json())
           .then(res => {
-            if (!err) {
-              this.mdPagePresentableMap[resourceName] = res
+            if (res.errcode === 0) {
+              this.mdPagePresentableMap[resourceName] = res.data
               this.pageErrorText = ''
-              return res
+              return res.data
             } else {
               this.pageErrorText = `markdown文件加载出错了！！！</br>${res.msg}`
               return null

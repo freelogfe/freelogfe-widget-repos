@@ -159,16 +159,16 @@ export default {
 			.then((docsList) => {
 				window.FreelogApp.$loading.hide()
 				this.docsList = docsList.map(item => {
-					const { resourceInfo, updateDate, coverImages } = item
+					const { resourceInfo, updateDate, previewImages } = item
 					const d = new Date(updateDate)
 					var year = d.getFullYear(), month = d.getMonth() + 1, date = d.getDate()
 					month = month > 9 ? month : '0' + month
 					item.updateDate = `${year}-${month}-${date}`
 					item.previewUrl = 'http://test-frcdn.oss-cn-shenzhen.aliyuncs.com/console/public/img/resource.jpg'
-					if (coverImages && coverImages[0]) {
-						item.previewUrl = coverImages[0]
-					} else if(resourceInfo.coverImages && resourceInfo.coverImages[0]) {
-						item.previewUrl = resourceInfo.coverImages && resourceInfo.coverImages[0]
+					if (previewImages && previewImages[0]) {
+						item.previewUrl = previewImages[0]
+					} else if(resourceInfo && resourceInfo.previewImages[0]) {
+						item.previewUrl = resourceInfo && resourceInfo.previewImages[0]
 					}
 					return item 
 				})
@@ -199,9 +199,9 @@ export default {
 					.then(res => {
 						if(res.errcode === 0) {
 							this.mdPresentablesList = res.data.dataList.map(p => {
-								const { resourceInfo } = p
-								this.mdPresentablesMap[resourceInfo.resourceId] = p
-								this.mdPresentablesMap[resourceInfo.resourceName] = p
+								const { releaseInfo } = p
+								this.mdPresentablesMap[releaseInfo.releaseId] = p
+								this.mdPresentablesMap[releaseInfo.releaseName] = p
 								return p
 							})
 							return this.mdPresentablesList

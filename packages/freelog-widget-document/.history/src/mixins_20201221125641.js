@@ -6,7 +6,7 @@ export default {
         var subReleasesText = resp.headers.get('freelog-sub-dependencies')
         const entityNid = resp.headers.get('freelog-entity-nid')
 				try {
-					let subReleases = decodeURIComponent(subReleasesText)
+					let subReleases = Buffer.from(subReleasesText,'base64').toString('utf-8')
 					subReleases = JSON.parse(subReleases) 
 				}catch(e) {
 					console.error(e)
@@ -16,9 +16,9 @@ export default {
 		},
   },
   loadPresentableDataByName(resourceName) {
-    return window.FreelogApp.QI.fetch(`/v2/auths/presentables/nodes/${this.nodeId}/${resourceName}/fileStream`)
+    return window.FreelogApp.QI.fetch(`/v1/auths/${this.nodeId}/presentables/detail.file?releaseName=${resourceName}`)
       .then(resp => {
-        return !resp.headers.get('freelog-resource-type') ? resp.json() : resp.blob()
+        return !resp.headers.get('freelog-resource-type') ? resp.json() : resp.text()
       })
   }
 }
